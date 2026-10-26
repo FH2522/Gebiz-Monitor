@@ -1,4 +1,54 @@
+
+name: GeBIZ Auto Monitor
+
 on:
   workflow_dispatch:
   schedule:
     - cron: '*/30 * * * *'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gebiz-monitor
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Run GeBIZ Scraper
+        env:
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          TZ: Asia/Singapore
+        run: python scraper.py
+
+      - name: Save monitoring data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add gebiz_data.json
+          if [ -f tg_notified.json ]; then
+            git add -f tg_notified.json
+          fi
+          if ! git diff --cached --quiet; then
+            git commit -m "Update GeBIZ monitoring data"
+            git push
+          fi
