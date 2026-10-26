@@ -1,0 +1,27 @@
+# Logs
+*.log
+gebiz_scraper.log
+gebiz_bot.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Local state (kept locally, never pushed)
+tg_notified.json
+
+# Secrets — NEVER commit these
+.env
+secrets.txt

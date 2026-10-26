@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeBIZ HDB Tender Monitor</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f5f7;
+    --surface: #ffffff;
+    --surface2: #f9f9fb;
+    --border: #e5e5ea;
+    --border2: #d1d1d6;
+    --text: #1d1d1f;
+    --text2: #3a3a3c;
+    --muted: #86868b;
+    --muted2: #aeaeb2;
+    --accent: #0071e3;
+    --accent-light: #e8f0fb;
+    --green: #34c759;
+    --green-light: #e8f8ec;
+    --red: #ff3b30;
+    --red-light: #fff0ef;
+    --orange: #ff9500;
+    --orange-light: #fff4e5;
+    --purple: #5856d6;
+    --purple-light: #efeefc;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Header ── */
+  header {
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-mark {
+    width: 30px;
+    height: 30px;
+    background: var(--text);
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: white;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+
+  .logo-sub {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 400;
+    margin-left: 4px;
+  }
+
+  .hdr-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    display: inline-block;
+    animation: breathe 2.5s ease-in-out infinite;
+  }
+  @keyframes breathe {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+
+  .hdr-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+  }
+
+  .refresh-btn {
+    background: var(--text);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    letter-spacing: -0.1px;
+  }
+  .refresh-btn:hover { opacity: 0.8; }
+
+  /* ── Main layout ── */
+  .main {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 32px 32px;
+  }
+
+  /* ── Stats row ── */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .scard {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 22px;
+    transition: box-shadow 0.2s;
+  }
+  .scard:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+
+  .slabel {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+
+  .sval {
+    font-family: 'DM Mono', monospace;
+    font-size: 32px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+
+  .scard.s-open .sval   { color: var(--green); }
+  .scard.s-closed .sval { color: var(--red); }
+  .scard.s-total .sval  { color: var(--accent); }
+  .scard.s-time .sval   { font-size: 12px; color: var(--text2); margin-top: 4px; line-height: 1.6; letter-spacing: 0; }
+
+  .ssub {
+    font-size: 11px;
+    color: var(--muted2);
+    margin-top: 4px;
+  }
+
+  /* ── Alert ── */
+  .alert {
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    line-height: 1.6;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .alert-info {
+    background: var(--accent-light);
+    color: #004aad;
+    border: 1px solid rgba(0,113,227,0.2);
+  }
+  .alert-warn {
+    background: var(--orange-light);
+    color: #8a4800;
+    border: 1px solid rgba(255,149,0,0.25);
+  }
+  .alert-close {
+    margin-left: auto;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1;
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+  .alert-close:hover { opacity: 1; }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+    width: fit-content;
+  }
+
+  .tab {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 7px 18px;
+    cursor: pointer;
+    color: var(--muted);
+    border: none;
+    background: none;
+    border-radius: 7px;
+    transition: all 0.15s;
+    letter-spacing: -0.1px;
+  }
+  .tab.active {
+    background: var(--text);
+    color: white;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  }
+  .tab:hover:not(.active) { color: var(--text); background: var(--bg); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── Section label ── */
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  /* ── Panel ── */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    transition: box-shadow 0.2s;
+  }
+  .panel:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+
+  .panel-hdr {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    background: var(--surface2);
+  }
+
+  .panel-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--text);
+    margin-bottom: 4px;
+    letter-spacing: -0.2px;
+  }
+
+  .panel-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .panel-meta a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .panel-meta a:hover { text-decoration: underline; }
+
+  /* ── Badges ── */
+  .badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 5px;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+    align-self: flex-start;
+  }
+  .badge-open   { background: var(--green-light); color: #1a7f37; }
+  .badge-closed { background: var(--red-light); color: #c0392b; }
+  .badge-awarded { background: var(--orange-light); color: #8a4800; }
+  .badge-lps    { background: #f0f0ff; color: #5856d6; border: 1px solid rgba(88,86,214,0.25); }
+
+  /* ── Tender list (open) ── */
+  .tender-item {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+  .tender-item:last-child { border-bottom: none; }
+  .tender-item:hover { background: var(--surface2); }
+
+  .tender-title {
+    font-size: 13.5px;
+    font-weight: 500;
+    line-height: 1.45;
+    color: var(--text);
+    margin-bottom: 8px;
+    letter-spacing: -0.15px;
+  }
+  .tender-title em { font-style: normal; font-weight: 600; color: var(--accent); }
+
+  .tender-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: center;
+  }
+
+  .meta-chip {
+    font-family: 'DM Mono', monospace;
+    font-size: 10.5px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .deadline-chip {
+    font-family: 'DM Mono', monospace;
+    font-size: 10.5px;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .deadline-normal { background: var(--orange-light); color: #8a4800; }
+  .deadline-urgent { background: var(--red-light); color: #c0392b; }
+  .deadline-ok     { color: var(--muted); }
+
+  /* ── Respondent table ── */
+  .resp-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .resp-table th {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--muted);
+    padding: 10px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .resp-table td {
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text2);
+    vertical-align: middle;
+  }
+
+  .resp-table tr:last-child td { border-bottom: none; }
+  .resp-table tbody tr:hover td { background: #fafafa; }
+
+  .row-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted2);
+    width: 36px;
+  }
+
+  .company-cell { font-weight: 500; color: var(--text); }
+  .company-cell.is-lowest { color: var(--green); }
+  .company-cell.is-winner { color: var(--orange); }
+
+  .price-cell {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .price-cell.is-lowest { color: var(--green); font-weight: 500; }
+  .price-sum { color: var(--purple); }
+
+  .opt-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    font-weight: 500;
+    padding: 1px 4px;
+    border-radius: 3px;
+    margin-left: 4px;
+  }
+  .opt-a { background: var(--green-light); color: #1a7f37; }
+  .opt-b { background: var(--accent-light); color: #004aad; }
+
+  .award-tag {
+    font-size: 10px;
+    font-weight: 600;
+    background: var(--orange-light);
+    color: #8a4800;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+  }
+
+  /* ── Price bar ── */
+  .bar-cell { min-width: 160px; }
+  .pbar-wrap { display: flex; align-items: center; gap: 8px; }
+  .pbar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    flex: 1;
+    max-width: 72px;
+    overflow: hidden;
+  }
+  .pbar-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+  .bar-pct {
+    font-family: 'DM Mono', monospace;
+    font-size: 10.5px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* ── Summary box ── */
+  .summary-box {
+    margin: 0;
+    padding: 16px 20px;
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+    font-size: 12.5px;
+    line-height: 1.8;
+    color: var(--text2);
+  }
+
+  .summary-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  /* ── Empty state ── */
+  .empty {
+    padding: 52px 20px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .empty-icon { font-size: 28px; margin-bottom: 10px; opacity: 0.5; }
+
+  /* ── Spinner ── */
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--border2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.65s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Keyword highlight ── */
+  .kw         { font-weight: 600; color: var(--accent); }
+  .kw-project { font-weight: 700; color: var(--text);
+                background: var(--bg); padding: 0 3px;
+                border-radius: 3px; font-style: normal; }
+  .kw-du      { font-weight: 700; color: var(--text); font-style: normal; }
+
+  /* ── Divider ── */
+  .divider {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--muted);
+    padding: 8px 16px;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">GB</div>
+    <div>
+      <span class="logo-name">GeBIZ Monitor</span>
+      <span class="logo-sub">HDB · Building Works</span>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <div class="hdr-meta">
+      <span class="live-dot"></span>
+      <span id="last-updated" style="color:var(--muted)">—</span>
+    </div>
+    <div class="hdr-meta" style="color:var(--muted)">
+      Refresh in <span id="countdown" style="color:var(--text);font-weight:500">0:30</span>
+    </div>
+    <button class="refresh-btn" onclick="loadData()">Refresh</button>
+  </div>
+</header>
+
+<div class="main">
+
+  <div class="alert alert-info" id="how-it-works">
+    <span>This dashboard is updated automatically every ~30 minutes by GitHub Actions, which scrapes GeBIZ and refreshes the data.</span>
+    <span class="alert-close" onclick="this.parentElement.style.display='none'">×</span>
+  </div>
+
+  <div class="alert alert-warn" id="no-data-alert" style="display:none">
+    <span>⚠ <strong>gebiz_data.json not found.</strong> The scraper may not have run yet — check back in a few minutes.</span>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="scard s-open">
+      <div class="slabel">Open Tenders</div>
+      <div class="sval" id="cnt-open">—</div>
+      <div class="ssub">Accepting bids</div>
+    </div>
+    <div class="scard s-closed">
+      <div class="slabel">Closed Tenders</div>
+      <div class="sval" id="cnt-closed">—</div>
+      <div class="ssub">With respondent data</div>
+    </div>
+    <div class="scard s-total">
+      <div class="slabel">Total Tracked</div>
+      <div class="sval" id="cnt-total">—</div>
+      <div class="ssub">Building works</div>
+    </div>
+    <div class="scard s-time">
+      <div class="slabel">Last Scraped</div>
+      <div class="sval" id="last-scraped">Not yet</div>
+      <div class="ssub">Run count: <span id="run-count">—</span></div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('open')">Open Tenders</button>
+    <button class="tab" onclick="switchTab('closed')">Closed &amp; Respondents</button>
+    <button class="tab" onclick="switchTab('awarded')">Awarded</button>
+  </div>
+
+  <!-- Open -->
+  <div class="tab-content active" id="tab-open">
+    <div class="section-label">Currently accepting bids</div>
+    <div class="panel" id="open-panel">
+      <div class="empty"><div class="empty-icon">📋</div><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <!-- Closed -->
+  <div class="tab-content" id="tab-closed">
+    <div class="section-label">Closed — bid results</div>
+    <div id="closed-panel">
+      <div class="empty" style="background:var(--surface);border:1px solid var(--border);border-radius:14px">
+        <div class="empty-icon">📊</div><div class="spinner"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Awarded -->
+  <div class="tab-content" id="tab-awarded">
+    <div class="section-label">Awarded — two-envelope tenders</div>
+    <div id="awarded-panel">
+      <div class="empty" style="background:var(--surface);border:1px solid var(--border);border-radius:14px">
+        <div class="empty-icon">✦</div><div class="spinner"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let countdownSec = 30;
+let timerInterval;
+
+async function loadData() {
+  let data = null;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const res = await fetch('gebiz_data.json?_=' + Date.now());
+      if (!res.ok) throw new Error('http ' + res.status);
+      const text = await res.text();
+      if (!text || text.trim().length < 10) throw new Error('empty');
+      data = JSON.parse(text);
+      break;
+    } catch(e) {
+      if (attempt < 3) { await new Promise(r => setTimeout(r, 500)); }
+    }
+  }
+
+  document.getElementById('last-updated').textContent =
+    new Date().toLocaleTimeString('en-SG', {hour:'2-digit',minute:'2-digit'});
+
+  if (!data) {
+    document.getElementById('no-data-alert').style.display = 'flex';
+    ['cnt-open','cnt-closed','cnt-total'].forEach(id =>
+      document.getElementById(id).textContent = '—');
+    document.getElementById('last-scraped').textContent = 'No data';
+    document.getElementById('open-panel').innerHTML =
+      '<div class="empty"><div class="empty-icon">⚠️</div>gebiz_data.json not found.<br>' +
+      '<small>Make sure run_monitor.py is running in the same folder.</small></div>';
+    document.getElementById('closed-panel').innerHTML = '';
+    return;
+  }
+
+  // Data loaded — render separately so render bugs don't show the fetch-error screen
+  document.getElementById('no-data-alert').style.display = 'none';
+  try { renderAll(data); } catch(e) { console.error('Render error:', e); }
+}
+
+function renderAll(data) {
+  const open   = data.open   || [];
+  const closed = data.closed || [];
+  document.getElementById('cnt-open').textContent   = open.length;
+  document.getElementById('cnt-closed').textContent = closed.length;
+  document.getElementById('cnt-total').textContent  = open.length + closed.length;
+  document.getElementById('last-scraped').textContent = data.last_updated || '—';
+  document.getElementById('run-count').textContent  = data.run_count || '0';
+  // two_envelope + under_evaluation = still pending → goes to Closed tab
+  // two_envelope + awarded (has awarded_to) = fully awarded → goes to Awarded tab
+  const nonAwarded = closed.filter(t => !t.two_envelope || t.under_evaluation);
+  const awarded    = closed.filter(t =>  t.two_envelope && !t.under_evaluation);
+  renderOpen(open);
+  renderClosed(nonAwarded);
+  renderAwarded(awarded);
+  // Update awarded tab label with count
+  const tabs = document.querySelectorAll('.tab');
+  if (tabs[2]) tabs[2].textContent =
+    'Awarded' + (awarded.length ? ' (' + awarded.length + ')' : '');
+}
+
+// ── Open tenders ──────────────────────────────────────────────────────────────
+function renderOpen(list) {
+  const panel = document.getElementById('open-panel');
+  if (!list.length) {
+    panel.innerHTML = '<div class="empty"><div class="empty-icon">📋</div>No open tenders found yet.</div>';
+    return;
+  }
+  const now = new Date();
+  // Sort: LPS first, then by close date
+  const sorted = [...list].sort((a,b) => {
+    const aLps = (a.tender_type === 'lps') ? 0 : 1;
+    const bLps = (b.tender_type === 'lps') ? 0 : 1;
+    if (aLps !== bLps) return aLps - bLps;
+    return parseDate(a.close_date) - parseDate(b.close_date);
+  });
+  panel.innerHTML = sorted.map(t => {
+    const closeMs  = parseDate(t.close_date);
+    const daysLeft = Math.ceil((closeMs - now) / 86400000);
+    const urgent   = daysLeft >= 0 && daysLeft <= 3;
+    const deadlineClass = urgent ? 'deadline-urgent' : daysLeft <= 10 ? 'deadline-normal' : 'deadline-ok';
+    const deadlineLabel = daysLeft >= 0 ? daysLeft + 'd left' : 'Overdue';
+    return '<div class="tender-item">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">' +
+        '<div class="tender-title">' + hl(t.title) + '</div>' +
+        '<span class="badge badge-open">OPEN</span>' +
+        (t.tender_type === 'lps' ? '<span class="badge badge-lps" style="margin-left:6px">LPS</span>' : '') +
+      '</div>' +
+      '<div class="tender-meta">' +
+        (t.doc_no ? '<span class="meta-chip">' + t.doc_no + '</span>' : '') +
+        (t.published ? '<span class="meta-chip">Published ' + t.published + '</span>' : '') +
+        '<span class="meta-chip deadline-chip ' + deadlineClass + '">Closes ' + (t.close_date||'—') + ' · ' + deadlineLabel + '</span>' +
+        (t.url ? '<a href="' + t.url + '" target="_blank" class="meta-chip" style="color:var(--accent)">↗ GeBIZ</a>' : '') +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── Awarded tenders ───────────────────────────────────────────────────────────
+function renderAwarded(list) {
+  const panel = document.getElementById('awarded-panel');
+  if (!list.length) {
+    panel.innerHTML = '<div class="empty" style="background:var(--surface);border:1px solid var(--border);border-radius:14px"><div class="empty-icon">✦</div>No awarded tenders found yet.</div>';
+    return;
+  }
+  // Sort: LPS first, then most recently closed
+  const sorted = [...list].sort((a,b) => {
+    const aLps = (a.tender_type === 'lps') ? 0 : 1;
+    const bLps = (b.tender_type === 'lps') ? 0 : 1;
+    if (aLps !== bLps) return aLps - bLps;
+    return parseDate(b.close_date) - parseDate(a.close_date);
+  });
+  panel.innerHTML = sorted.map(t => renderClosedCard(t)).join('');
+}
+
+// ── Closed tenders ────────────────────────────────────────────────────────────
+function renderClosed(list) {
+  const panel = document.getElementById('closed-panel');
+  if (!list.length) {
+    panel.innerHTML = '<div class="empty" style="background:var(--surface);border:1px solid var(--border);border-radius:14px"><div class="empty-icon">📊</div>No closed tenders yet.</div>';
+    return;
+  }
+  // Sort: LPS first, then most recently closed
+  const sorted = [...list].sort((a,b) => {
+    const aLps = (a.tender_type === 'lps') ? 0 : 1;
+    const bLps = (b.tender_type === 'lps') ? 0 : 1;
+    if (aLps !== bLps) return aLps - bLps;
+    return parseDate(b.close_date) - parseDate(a.close_date);
+  });
+  panel.innerHTML = sorted.map(t => renderClosedCard(t)).join('');
+}
+
+function renderClosedCard(t) {
+  const resp     = t.respondents || [];
+  const isTwoEnv = !!t.two_envelope;
+  const hasPending = resp.some(r => r.price_pending);
+  const pricedResp = resp.filter(r => !r.price_pending);
+  const hasB     = pricedResp.some(r => r.opt_b);
+  const validA   = pricedResp.filter(r => r.opt_a);
+  const minA     = validA.length ? Math.min(...validA.map(r => r.opt_a)) : 0;
+  const maxA     = validA.length ? Math.max(...validA.map(r => r.opt_a)) : 0;
+
+  const rows = resp.map((r, i) => {
+    const isPending = !!r.price_pending;
+    const isWinner  = isTwoEnv && t.awarded_to && r.name === t.awarded_to;
+    const isLowest  = !isTwoEnv && !isPending && pricedResp[0] && r.name === pricedResp[0].name;
+    const abSum     = (r.opt_a && r.opt_b) ? r.opt_a + r.opt_b : null;
+    const pctAbove  = (minA && r.opt_a && !isLowest) ? ((r.opt_a - minA) / minA * 100) : 0;
+    const barW      = (maxA > minA && r.opt_a) ? Math.round((r.opt_a - minA) / (maxA - minA) * 100) : 0;
+    const vsLabel   = isPending ? '—' : isLowest ? 'lowest' : '+' + pctAbove.toFixed(1) + '%';
+
+    let barColor = '#d1d1d6';
+    if (isPending) barColor = '#e5e5ea';
+    else if (isLowest) barColor = 'var(--green)';
+    else if (pctAbove <= 5) barColor = '#aeaeb2';
+    else if (pctAbove <= 15) barColor = 'var(--accent)';
+    else barColor = 'var(--red)';
+
+    const priceDisplay = isPending
+      ? '<span style="color:var(--muted2);font-size:11px;font-style:italic">Pending</span>'
+      : fmtp(r.opt_a) + '<span class="opt-tag opt-a">A</span>';
+    const optBCell  = hasB ? '<td class="price-cell">' + (r.opt_b ? fmtp(r.opt_b) + '<span class="opt-tag opt-b">B</span>' : '<span style="color:var(--muted2)">—</span>') + '</td>' : '';
+    const abCell    = hasB ? '<td class="price-cell price-sum">' + (abSum ? fmtp(abSum) : '<span style="color:var(--muted2)">—</span>') + '</td>' : '';
+
+    return '<tr' + (isPending ? ' style="opacity:0.6"' : '') + '>' +
+      '<td class="row-num">' + String(i+1).padStart(2,'0') + '</td>' +
+      '<td class="company-cell' + (isLowest ? ' is-lowest' : isWinner ? ' is-winner' : '') + '">' +
+        (isLowest ? '↓ ' : '') + (isWinner ? '✦ ' : '') + r.name +
+        (isWinner ? '<span class="award-tag">AWARDED</span>' : '') +
+      '</td>' +
+      '<td class="price-cell' + (isLowest ? ' is-lowest' : '') + '">' + priceDisplay + '</td>' +
+      optBCell + abCell +
+      '<td class="bar-cell"><div class="pbar-wrap">' +
+        '<div class="pbar"><div class="pbar-fill" style="width:' + barW + '%;background:' + barColor + '"></div></div>' +
+        '<span class="bar-pct">' + vsLabel + '</span>' +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
+
+  const optBHeader = hasB
+    ? '<th>Option B</th><th style="color:var(--purple)">A+B</th>'
+    : '';
+
+  const lowestBid   = pricedResp[0] || null;
+  const highestBid  = pricedResp.length > 1 ? pricedResp[pricedResp.length - 1] : null;
+  const spreadPct   = (lowestBid && highestBid && lowestBid.opt_a)
+    ? ((highestBid.opt_a - lowestBid.opt_a) / lowestBid.opt_a * 100).toFixed(1) + '%'
+    : 'N/A';
+  const pendingNote = hasPending
+    ? '<div style="font-size:11px;color:var(--muted);margin-top:4px">⏳ Prices not yet published for some respondents — will update automatically.</div>'
+    : '';
+  const isUnderEval = !!t.under_evaluation;
+
+  const summaryLines = isTwoEnv
+    ? (isUnderEval
+      ? [
+          '⏳ <strong>Under Evaluation</strong> — prices will be published after the award.',
+          'Closed ' + (t.close_date||'—') + ' &nbsp;·&nbsp; ' + resp.length + ' respondents (names only, prices pending)',
+        ]
+      : [
+          (t.awarded_to
+            ? '✦ Awarded to <strong style="color:var(--orange)">' + t.awarded_to + '</strong>'
+              + (t.awarded_value ? ' &nbsp;·&nbsp; <strong>' + fmtp(t.awarded_value) + '</strong>' : '')
+              + (t.awarded_date ? ' &nbsp;·&nbsp; ' + t.awarded_date : '')
+            : 'Awarded company not available — check GeBIZ Award tab'),
+          'Closed ' + (t.close_date||'—') + ' &nbsp;·&nbsp; ' + resp.length + ' shortlisted (prices shown for shortlisted only)',
+        ])
+    : [
+        lowestBid ? '↓ Lowest &nbsp;<strong style="color:var(--green)">' + lowestBid.name + '</strong>&nbsp; ' + fmtp(lowestBid.opt_a) + (lowestBid.opt_b ? ' / ' + fmtp(lowestBid.opt_b) : '') : '',
+        (highestBid && lowestBid && lowestBid.opt_a) ? '↑ Highest &nbsp;<strong style="color:var(--red)">' + highestBid.name + '</strong>&nbsp; ' + fmtp(highestBid.opt_a) + ' &nbsp;(+' + ((highestBid.opt_a - lowestBid.opt_a)/lowestBid.opt_a*100).toFixed(1) + '% above lowest)' : '',
+        pricedResp.length > 1 ? 'Price spread &nbsp;<strong>' + spreadPct + '</strong>' : '',
+      ];
+
+  const twoEnvBadge = isTwoEnv
+    ? (isUnderEval
+        ? '<span class="badge" style="margin-left:8px;vertical-align:middle;background:#f0f0ff;color:#5856d6;border:1px solid rgba(88,86,214,0.25)">TWO-ENVELOPE · UNDER EVALUATION</span>'
+        : '<span class="badge badge-awarded" style="margin-left:8px;vertical-align:middle">TWO-ENVELOPE · AWARDED</span>')
+    : '';
+
+  const table = resp.length
+    ? '<table class="resp-table">' +
+        '<thead><tr><th style="width:36px">#</th><th>Company</th><th>Option A</th>' + optBHeader + '<th>vs Lowest</th></tr></thead>' +
+        '<tbody>' + rows + '</tbody>' +
+      '</table>' +
+      '<div class="summary-box">' +
+        '<div class="summary-label">Summary</div>' +
+        summaryLines.filter(Boolean).map(l => '<div>' + l + '</div>').join('') +
+        pendingNote +
+      '</div>'
+    : '<div class="empty">Respondent data not yet available.</div>';
+
+  return '<div class="panel">' +
+    '<div class="panel-hdr">' +
+      '<div style="flex:1;min-width:0">' +
+        '<div class="panel-title">' + hl(t.title) + twoEnvBadge +
+          (t.tender_type === 'lps' ? '<span class="badge badge-lps" style="margin-left:8px;vertical-align:middle">LPS</span>' : '') +
+        '</div>' +
+        '<div class="panel-meta">' +
+          (t.published ? '<span>Published ' + t.published + '</span><span style="color:var(--border2)">·</span>' : '') +
+          '<span>Closed ' + (t.close_date||'—') + '</span>' +
+          '<span style="color:var(--border2)">·</span>' +
+          '<span>' + resp.length + (isTwoEnv ? ' shortlisted' : '') + ' respondents</span>' +
+          (t.url ? '<span style="color:var(--border2)">·</span><a href="' + t.url + '" target="_blank">↗ GeBIZ</a>' : '') +
+        '</div>' +
+      '</div>' +
+      '<span class="badge badge-closed">CLOSED</span>' +
+    '</div>' +
+    table +
+  '</div>';
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function hl(s) {
+  // Highlight project code e.g. "PROJECT DN"
+  s = s.replace(/\b(PROJECT\s+)([A-Z]{2,3})\b/gi,
+    (_, pre, code) => pre + '<em class="kw-project">' + code + '</em>');
+  // Highlight the DU count number only (not the words "DWELLING UNITS")
+  s = s.replace(/TOTAL:\s*([\d,]+)\s*(DWELLING UNITS)/gi,
+    (_, num, words) => 'TOTAL: <em class="kw-du">' + num + '</em> ' + words);
+  // Highlight LPS
+  s = s.replace(/\bLPS\b/g, '<em style="font-style:normal;font-weight:700;color:var(--purple)">LPS</em>');
+  return s;
+}
+
+function fmtp(n) {
+  if (!n && n !== 0) return '—';
+  return 'S$' + Number(n).toLocaleString('en-SG', {minimumFractionDigits:0, maximumFractionDigits:0});
+}
+
+function parseDate(s) {
+  if (!s) return 0;
+  // "DD Mon YYYY HH:MMam" format
+  const m = s.match(/^(\d{1,2})\s+(\w+)\s+(\d{4})/);
+  if (m) return new Date(m[2] + ' ' + m[1] + ' ' + m[3]).getTime();
+  const parts = s.split('/');
+  if (parts.length === 3) return new Date(parts[2] + '-' + parts[1] + '-' + parts[0]).getTime();
+  return new Date(s).getTime() || 0;
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', ['open','closed','awarded'][i] === name);
+  });
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+function startCountdown() {
+  clearInterval(timerInterval);
+  countdownSec = 30;
+  timerInterval = setInterval(() => {
+    countdownSec--;
+    const m = Math.floor(countdownSec / 60);
+    const s = countdownSec % 60;
+    document.getElementById('countdown').textContent = m + ':' + String(s).padStart(2,'0');
+    if (countdownSec <= 0) { loadData(); countdownSec = 30; }
+  }, 1000);
+}
+
+loadData();
+startCountdown();
+</script>
+</body>
+</html>
