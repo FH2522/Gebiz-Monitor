@@ -1,6 +1,3 @@
-bash
-
-
 
 """
 scraper.py — GeBIZ Tender Monitor (single-run version for GitHub Actions)
