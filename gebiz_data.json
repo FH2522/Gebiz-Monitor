@@ -9,7 +9,9 @@
       "agency": "Housing and Development Board",
       "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000175",
       "tender_type": "building_works",
-      "added": "26 Oct 2026, 15:07"
+      "added": "26 Oct 2026, 15:07",
+      "project_code": "ECT",
+      "du_count": 834
     },
     {
       "title": "PART A: BUILDING WORKS AT PROJECT EG AND PARK (TOTAL: 2,234 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
@@ -20,7 +22,9 @@
       "agency": "Housing and Development Board",
       "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000174",
       "tender_type": "building_works",
-      "added": "26 Oct 2026, 15:07"
+      "added": "26 Oct 2026, 15:07",
+      "project_code": "EG",
+      "du_count": 2234
     },
     {
       "title": "PART A: BUILDING WORKS AT PROJECT FJ (TOTAL: 812 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
@@ -31,7 +35,9 @@
       "agency": "Housing and Development Board",
       "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000176",
       "tender_type": "building_works",
-      "added": "26 Oct 2026, 15:08"
+      "added": "26 Oct 2026, 15:08",
+      "project_code": "FJ",
+      "du_count": 812
     },
     {
       "title": "PART A: BUILDING WORKS AT PROJECT EN (TOTAL: 460 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
@@ -42,7 +48,9 @@
       "agency": "Housing and Development Board",
       "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000150",
       "tender_type": "building_works",
-      "added": "26 Oct 2026, 15:08"
+      "added": "26 Oct 2026, 15:08",
+      "project_code": "EN",
+      "du_count": 460
     },
     {
       "title": "PART A: BUILDING WORKS AT PROJECT GB (TOTAL: 1,928 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
@@ -53,7 +61,9 @@
       "agency": "Housing and Development Board",
       "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000146",
       "tender_type": "building_works",
-      "added": "26 Oct 2026, 15:08"
+      "added": "26 Oct 2026, 15:08",
+      "project_code": "GB",
+      "du_count": 1928
     }
   ],
   "closed": [
@@ -67,7 +77,11 @@
       "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000173",
       "tender_type": "building_works",
       "respondents": [],
-      "added": "26 Oct 2026, 15:08"
+      "added": "26 Oct 2026, 15:08",
+      "requires_option_b": true,
+      "hdb_verified": true,
+      "project_code": "ECT",
+      "du_count": 834
     },
     {
       "title": "PART A: BUILDING WORKS AT PROJECT GY (TOTAL: 711 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
@@ -78,8 +92,199 @@
       "agency": "Housing and Development Board",
       "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000132",
       "tender_type": "building_works",
-      "respondents": [],
-      "added": "26 Oct 2026, 15:08"
+      "respondents": [
+        {
+          "name": "RIGHT CONSTRUCTION PTE LTD",
+          "opt_a": 125000000.0,
+          "opt_b": 126000000.0,
+          "total_price": 251000000.0,
+          "price_pending": false
+        },
+        {
+          "name": "CHIU TENG CONSTRUCTION CO. PTE. LTD.",
+          "opt_a": 134230000.0,
+          "opt_b": 134833000.0,
+          "total_price": 269063000.0,
+          "price_pending": false
+        },
+        {
+          "name": "NEWCON BUILDERS PTE. LTD.",
+          "opt_a": 134880000.0,
+          "opt_b": 136380000.0,
+          "total_price": 271260000.0,
+          "price_pending": false
+        },
+        {
+          "name": "PRECISE DEVELOPMENT PTE. LTD.",
+          "opt_a": 135178000.0,
+          "opt_b": 136678000.0,
+          "total_price": 271856000.0,
+          "price_pending": false
+        },
+        {
+          "name": "HO LEE CONSTRUCTION PTE LTD",
+          "opt_a": 135600000.0,
+          "opt_b": 137000000.0,
+          "total_price": 272600000.0,
+          "price_pending": false
+        },
+        {
+          "name": "KTC CIVIL ENGINEERING & CONSTRUCTION PTE LTD",
+          "opt_a": 136500000.0,
+          "opt_b": 137250000.0,
+          "total_price": 273750000.0,
+          "price_pending": false
+        },
+        {
+          "name": "STRAITS CONSTRUCTION SINGAPORE PRIVATE LIMITED",
+          "opt_a": 139071600.0,
+          "opt_b": 139071600.0,
+          "total_price": 278143200.0,
+          "price_pending": false
+        },
+        {
+          "name": "CHANG HUA CONSTRUCTION PTE LTD",
+          "opt_a": 139290000.0,
+          "opt_b": 139290000.0,
+          "total_price": 278580000.0,
+          "price_pending": false
+        },
+        {
+          "name": "SCT CONSTRUCTION PTE. LTD.",
+          "opt_a": 141246000.0,
+          "opt_b": 142378000.0,
+          "total_price": 283624000.0,
+          "price_pending": false
+        },
+        {
+          "name": "MASTER CONTRACT SERVICES PTE LTD",
+          "opt_a": 141000000.0,
+          "opt_b": 143000000.0,
+          "total_price": 284000000.0,
+          "price_pending": false
+        },
+        {
+          "name": "NIPPON BUILDERS PTE. LTD.",
+          "opt_a": 141555000.0,
+          "opt_b": 142555000.0,
+          "total_price": 284110000.0,
+          "price_pending": false
+        },
+        {
+          "name": "WELLTECH CONSTRUCTION PTE LTD",
+          "opt_a": 142600000.0,
+          "opt_b": 143600000.0,
+          "total_price": 286200000.0,
+          "price_pending": false
+        },
+        {
+          "name": "H P CONSTRUCTION & ENGINEERING PTE LTD",
+          "opt_a": 143600000.0,
+          "opt_b": 144800000.0,
+          "total_price": 288400000.0,
+          "price_pending": false
+        },
+        {
+          "name": "LC&T BUILDER (1971) PTE. LTD.",
+          "opt_a": 144000000.0,
+          "opt_b": 145700000.0,
+          "total_price": 289700000.0,
+          "price_pending": false
+        },
+        {
+          "name": "CHIP ENG SENG CONTRACTORS (1988) PTE LTD",
+          "opt_a": 144500000.0,
+          "opt_b": 145800000.0,
+          "total_price": 290300000.0,
+          "price_pending": false
+        },
+        {
+          "name": "KEN-PAL (S) PTE. LTD.",
+          "opt_a": 145755000.0,
+          "opt_b": 146455000.0,
+          "total_price": 292210000.0,
+          "price_pending": false
+        },
+        {
+          "name": "SB PROCUREMENT PTE. LTD.",
+          "opt_a": 145800000.0,
+          "opt_b": 146800000.0,
+          "total_price": 292600000.0,
+          "price_pending": false
+        },
+        {
+          "name": "KIMLY CONSTRUCTION PRIVATE LIMITED",
+          "opt_a": 146000000.0,
+          "opt_b": 148000000.0,
+          "total_price": 294000000.0,
+          "price_pending": false
+        },
+        {
+          "name": "PROGRESSIVE BUILDERS PRIVATE LIMITED",
+          "opt_a": 146880000.0,
+          "opt_b": 147380000.0,
+          "total_price": 294260000.0,
+          "price_pending": false
+        },
+        {
+          "name": "RICH CONSTRUCTION COMPANY PTE. LTD.",
+          "opt_a": 146600000.0,
+          "opt_b": 148000000.0,
+          "total_price": 294600000.0,
+          "price_pending": false
+        },
+        {
+          "name": "KAH ENGINEERING (1986) PTE. LTD.",
+          "opt_a": 148000000.0,
+          "opt_b": 149579000.0,
+          "total_price": 297579000.0,
+          "price_pending": false
+        },
+        {
+          "name": "SANCHOON BUILDERS PTE LTD",
+          "opt_a": 150510000.0,
+          "opt_b": 151888000.0,
+          "total_price": 302398000.0,
+          "price_pending": false
+        },
+        {
+          "name": "EXPAND CONSTRUCTION PTE LTD",
+          "opt_a": 152000000.0,
+          "opt_b": 152000000.0,
+          "total_price": 304000000.0,
+          "price_pending": false
+        },
+        {
+          "name": "DEBENHO PTE LTD",
+          "opt_a": 152800000.0,
+          "opt_b": 153300000.0,
+          "total_price": 306100000.0,
+          "price_pending": false
+        },
+        {
+          "name": "GUAN HO CONSTRUCTION CO (PTE) LTD",
+          "opt_a": 169579188.0,
+          "opt_b": 169579188.0,
+          "total_price": 339158376.0,
+          "price_pending": false
+        },
+        {
+          "name": "LIM WEN HENG CONSTRUCTION PTE LTD",
+          "opt_a": 186000000.0,
+          "opt_b": 188000000.0,
+          "total_price": 374000000.0,
+          "price_pending": false
+        }
+      ],
+      "added": "26 Oct 2026, 15:08",
+      "respondents_expected": 26,
+      "respondents_complete": true,
+      "requires_option_b": true,
+      "hdb_verified": true,
+      "two_envelope": false,
+      "under_evaluation": true,
+      "project_code": "GY",
+      "du_count": 711
     },
     {
       "title": "PART A: BUILDING WORKS AT PROJECT CM-CN (TOTAL: 1,890 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
@@ -90,8 +295,150 @@
       "agency": "Housing and Development Board",
       "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000117",
       "tender_type": "building_works",
-      "respondents": [],
-      "added": "26 Oct 2026, 15:08"
+      "respondents": [
+        {
+          "name": "UNISON CONSTRUCTION PTE. LTD.",
+          "opt_a": 370980000.0,
+          "opt_b": 370980000.0,
+          "total_price": 749960000.0,
+          "price_pending": false
+        },
+        {
+          "name": "CHANG HUA CONSTRUCTION PTE LTD",
+          "opt_a": 377890000.0,
+          "opt_b": 377890000.0,
+          "total_price": 763780000.0,
+          "price_pending": false
+        },
+        {
+          "name": "CHIP ENG SENG CONTRACTORS (1988) PTE LTD",
+          "opt_a": 398608000.0,
+          "opt_b": 403159000.0,
+          "total_price": 810007000.0,
+          "price_pending": false
+        },
+        {
+          "name": "SINGAPORE ENGINEERING & CONSTRUCTION PTE. LTD.",
+          "opt_a": 409000000.0,
+          "opt_b": 409000000.0,
+          "total_price": 818888000.0,
+          "price_pending": false
+        },
+        {
+          "name": "HI-TEK CONSTRUCTION PTE. LTD.",
+          "opt_a": 412500000.0,
+          "opt_b": 416500000.0,
+          "total_price": 829500000.0,
+          "price_pending": false
+        },
+        {
+          "name": "EXPAND CONSTRUCTION PTE LTD",
+          "opt_a": 412500000.0,
+          "opt_b": 416500000.0,
+          "total_price": 834500000.0,
+          "price_pending": false
+        },
+        {
+          "name": "BHCC CONSTRUCTION PTE. LTD.",
+          "opt_a": 412600000.0,
+          "opt_b": 417600000.0,
+          "total_price": 836588000.0,
+          "price_pending": false
+        },
+        {
+          "name": "CHIU TENG CONSTRUCTION CO. PTE. LTD.",
+          "opt_a": 419800000.0,
+          "opt_b": 419800000.0,
+          "total_price": 844600000.0,
+          "price_pending": false
+        },
+        {
+          "name": "RIGHT CONSTRUCTION PTE LTD",
+          "opt_a": 421553300.0,
+          "opt_b": 425553300.0,
+          "total_price": 857106600.0,
+          "price_pending": false
+        },
+        {
+          "name": "PRECISE DEVELOPMENT PTE. LTD.",
+          "opt_a": 425250000.0,
+          "opt_b": 429450000.0,
+          "total_price": 857200000.0,
+          "price_pending": false
+        },
+        {
+          "name": "NEWCON BUILDERS PTE. LTD.",
+          "opt_a": 426380000.0,
+          "opt_b": 430380000.0,
+          "total_price": 862140000.0,
+          "price_pending": false
+        },
+        {
+          "name": "CHAN RONG FEN BUILDING CONSTRUCTION PTE LTD",
+          "opt_a": 426500000.0,
+          "opt_b": 430000000.0,
+          "total_price": 864100000.0,
+          "price_pending": false
+        },
+        {
+          "name": "RICH CONSTRUCTION COMPANY PTE. LTD.",
+          "opt_a": 430000000.0,
+          "opt_b": 433000000.0,
+          "total_price": 866800000.0,
+          "price_pending": false
+        },
+        {
+          "name": "WELLTECH CONSTRUCTION PTE LTD",
+          "opt_a": 432600000.0,
+          "opt_b": 435600000.0,
+          "total_price": 873200000.0,
+          "price_pending": false
+        },
+        {
+          "name": "KAH ENGINEERING (1986) PTE. LTD.",
+          "opt_a": 443465000.0,
+          "opt_b": 445965000.0,
+          "total_price": 900965000.0,
+          "price_pending": false
+        },
+        {
+          "name": "SCT CONSTRUCTION PTE. LTD.",
+          "opt_a": 445442000.0,
+          "opt_b": 450310000.0,
+          "total_price": 902616100.0,
+          "price_pending": false
+        },
+        {
+          "name": "LC&T BUILDER (1971) PTE. LTD.",
+          "opt_a": 445000000.0,
+          "opt_b": 450700000.0,
+          "total_price": 903200000.0,
+          "price_pending": false
+        },
+        {
+          "name": "LIM WEN HENG CONSTRUCTION PTE LTD",
+          "opt_a": 463000000.0,
+          "opt_b": 468000000.0,
+          "total_price": 939000000.0,
+          "price_pending": false
+        },
+        {
+          "name": "MASTER CONTRACT SERVICES PTE LTD",
+          "opt_a": 466000000.0,
+          "opt_b": 470100000.0,
+          "total_price": 946600000.0,
+          "price_pending": false
+        }
+      ],
+      "added": "26 Oct 2026, 15:08",
+      "respondents_expected": 20,
+      "respondents_complete": false,
+      "requires_option_b": true,
+      "hdb_verified": true,
+      "two_envelope": false,
+      "under_evaluation": true,
+      "project_code": "CM-CN",
+      "du_count": 1890
     },
     {
       "title": "PART A: BUILDING WORKS AT PROJECT DU (TOTAL: 1,695 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
@@ -104,21 +451,148 @@
       "tender_type": "building_works",
       "respondents": [
         {
-          "name": "Refer to attached letter. layout_RepaintAllLayouts(); layout_RepaintAllLayouts(); H P CONSTRUCTION & ENGINEERING PTE LTD 731,340,000.00 (SGD)",
-          "opt_a": 364340000.0,
-          "opt_b": 367000000.0,
-          "price_pending": false,
-          "shortlisted": null
+          "name": "RIGHT CONSTRUCTION PTE LTD",
+          "opt_a": 313153300.0,
+          "opt_b": 315153300.0,
+          "total_price": 629106600.0,
+          "price_pending": false
         },
         {
-          "name": "Please refer to the enclosed RCPL -Cover Letter for Alternative Offer & Form of Tender layout_RepaintAllLayouts(); layout_RepaintAllLayouts(); SCT CONSTRUCTION PTE. LTD. 860,450,000.00 (SGD)",
+          "name": "HO LEE CONSTRUCTION PTE LTD",
+          "opt_a": 317000000.0,
+          "opt_b": 319900000.0,
+          "total_price": 636900000.0,
+          "price_pending": false
+        },
+        {
+          "name": "CHIU TENG CONSTRUCTION CO. PTE. LTD.",
+          "opt_a": 319870000.0,
+          "opt_b": 322830000.0,
+          "total_price": 643700000.0,
+          "price_pending": false
+        },
+        {
+          "name": "KAH ENGINEERING (1986) PTE. LTD.",
+          "opt_a": 336969000.0,
+          "opt_b": 339969000.0,
+          "total_price": 676938000.0,
+          "price_pending": false
+        },
+        {
+          "name": "PRECISE DEVELOPMENT PTE. LTD.",
+          "opt_a": 339000000.0,
+          "opt_b": 342200000.0,
+          "total_price": 681200000.0,
+          "price_pending": false
+        },
+        {
+          "name": "NEWCON BUILDERS PTE. LTD.",
+          "opt_a": 352380000.0,
+          "opt_b": 355380000.0,
+          "total_price": 707760000.0,
+          "price_pending": false
+        },
+        {
+          "name": "WELLTECH CONSTRUCTION PTE LTD",
+          "opt_a": 353600000.0,
+          "opt_b": 356600000.0,
+          "total_price": 710200000.0,
+          "price_pending": false
+        },
+        {
+          "name": "CHIP ENG SENG CONTRACTORS (1988) PTE LTD",
+          "opt_a": 354800000.0,
+          "opt_b": 358380000.0,
+          "total_price": 713180000.0,
+          "price_pending": false
+        },
+        {
+          "name": "RICH CONSTRUCTION COMPANY PTE. LTD.",
+          "opt_a": 355800000.0,
+          "opt_b": 358800000.0,
+          "total_price": 714600000.0,
+          "price_pending": false
+        },
+        {
+          "name": "CHANG HUA CONSTRUCTION PTE LTD",
+          "opt_a": 362000000.0,
+          "opt_b": 362000000.0,
+          "total_price": 724000000.0,
+          "price_pending": false
+        },
+        {
+          "name": "LC&T BUILDER (1971) PTE. LTD.",
+          "opt_a": 360000000.0,
+          "opt_b": 365000000.0,
+          "total_price": 725000000.0,
+          "price_pending": false
+        },
+        {
+          "name": "KTC CIVIL ENGINEERING & CONSTRUCTION PTE LTD",
+          "opt_a": 362400000.0,
+          "opt_b": 366600000.0,
+          "total_price": 729000000.0,
+          "price_pending": false
+        },
+        {
+          "name": "H P CONSTRUCTION & ENGINEERING PTE LTD",
+          "opt_a": 364340000.0,
+          "opt_b": 367000000.0,
+          "total_price": 731340000.0,
+          "price_pending": false
+        },
+        {
+          "name": "BHCC CONSTRUCTION PTE. LTD.",
+          "opt_a": 365988000.0,
+          "opt_b": 369988000.0,
+          "total_price": 735976000.0,
+          "price_pending": false
+        },
+        {
+          "name": "KEN-PAL (S) PTE. LTD.",
+          "opt_a": 368200000.0,
+          "opt_b": 371700000.0,
+          "total_price": 739900000.0,
+          "price_pending": false
+        },
+        {
+          "name": "UNISON CONSTRUCTION PTE. LTD.",
+          "opt_a": 372229000.0,
+          "opt_b": 372229000.0,
+          "total_price": 744458000.0,
+          "price_pending": false
+        },
+        {
+          "name": "CHAN RONG FEN BUILDING CONSTRUCTION PTE LTD",
+          "opt_a": 370000000.0,
+          "opt_b": 375000000.0,
+          "total_price": 745000000.0,
+          "price_pending": false
+        },
+        {
+          "name": "KIENTA ENGINEERING CONSTRUCTION PTE. LTD.",
+          "opt_a": 400500000.0,
+          "opt_b": 405500000.0,
+          "total_price": 806000000.0,
+          "price_pending": false
+        },
+        {
+          "name": "SCT CONSTRUCTION PTE. LTD.",
           "opt_a": 432225000.0,
           "opt_b": 428225000.0,
-          "price_pending": false,
-          "shortlisted": null
+          "total_price": 860450000.0,
+          "price_pending": false
         }
       ],
-      "added": "26 Oct 2026, 15:09"
+      "added": "26 Oct 2026, 15:09",
+      "respondents_expected": 19,
+      "respondents_complete": true,
+      "requires_option_b": true,
+      "hdb_verified": true,
+      "two_envelope": false,
+      "under_evaluation": true,
+      "project_code": "DU",
+      "du_count": 1695
     },
     {
       "title": "PART A : BUILDING WORKS AT PROJECT BV (TOTAL: 438 DWELLING UNITS ); PART B : CONTINGENCY WORKS",
@@ -129,8 +603,136 @@
       "agency": "Housing and Development Board",
       "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000089",
       "tender_type": "building_works",
-      "respondents": [],
-      "added": "26 Oct 2026, 15:09"
+      "respondents": [
+        {
+          "name": "CHAN RONG FEN BUILDING CONSTRUCTION PTE LTD",
+          "opt_a": 95000000.0,
+          "opt_b": 96000000.0,
+          "total_price": 191000000.0,
+          "price_pending": false
+        },
+        {
+          "name": "CHIU TENG CONSTRUCTION CO. PTE. LTD.",
+          "opt_a": 104800000.0,
+          "opt_b": 104800000.0,
+          "total_price": 209600000.0,
+          "price_pending": false
+        },
+        {
+          "name": "NIPPON BUILDERS PTE. LTD.",
+          "opt_a": 104755000.0,
+          "opt_b": 105755000.0,
+          "total_price": 210510000.0,
+          "price_pending": false
+        },
+        {
+          "name": "PROGRESSIVE BUILDERS PRIVATE LIMITED",
+          "opt_a": 105700000.0,
+          "opt_b": 106200000.0,
+          "total_price": 211900000.0,
+          "price_pending": false
+        },
+        {
+          "name": "RIGHT CONSTRUCTION PTE LTD",
+          "opt_a": 105353300.0,
+          "opt_b": 106553300.0,
+          "total_price": 211906600.0,
+          "price_pending": false
+        },
+        {
+          "name": "HO LEE CONSTRUCTION PTE LTD",
+          "opt_a": 107000000.0,
+          "opt_b": 108000000.0,
+          "total_price": 215000000.0,
+          "price_pending": false
+        },
+        {
+          "name": "CHANG HUA CONSTRUCTION PTE LTD",
+          "opt_a": 108000000.0,
+          "opt_b": 108000000.0,
+          "total_price": 216000000.0,
+          "price_pending": false
+        },
+        {
+          "name": "LC&T BUILDER (1971) PTE. LTD.",
+          "opt_a": 116600000.0,
+          "opt_b": 117900000.0,
+          "total_price": 234500000.0,
+          "price_pending": false
+        },
+        {
+          "name": "KIMLY CONSTRUCTION PRIVATE LIMITED",
+          "opt_a": 118800000.0,
+          "opt_b": 119800000.0,
+          "total_price": 238600000.0,
+          "price_pending": false
+        },
+        {
+          "name": "SINGAPORE ENGINEERING & CONSTRUCTION PTE. LTD.",
+          "opt_a": 121168000.0,
+          "opt_b": 121168000.0,
+          "total_price": 242336000.0,
+          "price_pending": false
+        },
+        {
+          "name": "MASTER CONTRACT SERVICES PTE LTD",
+          "opt_a": 120500000.0,
+          "opt_b": 122500000.0,
+          "total_price": 243000000.0,
+          "price_pending": false
+        },
+        {
+          "name": "WELLTECH CONSTRUCTION PTE LTD",
+          "opt_a": 121600000.0,
+          "opt_b": 122600000.0,
+          "total_price": 244200000.0,
+          "price_pending": false
+        },
+        {
+          "name": "NEWCON BUILDERS PTE. LTD.",
+          "opt_a": 124380000.0,
+          "opt_b": 125380000.0,
+          "total_price": 249760000.0,
+          "price_pending": false
+        },
+        {
+          "name": "HPC BUILDERS PTE. LTD.",
+          "opt_a": 126360000.0,
+          "opt_b": 126360000.0,
+          "total_price": 252720000.0,
+          "price_pending": false
+        },
+        {
+          "name": "CHIP ENG SENG CONTRACTORS (1988) PTE LTD",
+          "opt_a": 134843000.0,
+          "opt_b": 135940000.0,
+          "total_price": 270783000.0,
+          "price_pending": false
+        },
+        {
+          "name": "KAH ENGINEERING (1986) PTE. LTD.",
+          "opt_a": 136000000.0,
+          "opt_b": 136793000.0,
+          "total_price": 272793000.0,
+          "price_pending": false
+        },
+        {
+          "name": "EXPAND CONSTRUCTION PTE LTD",
+          "opt_a": 152000000.0,
+          "opt_b": 152000000.0,
+          "total_price": 304000000.0,
+          "price_pending": false
+        }
+      ],
+      "added": "26 Oct 2026, 15:09",
+      "respondents_expected": 17,
+      "respondents_complete": true,
+      "requires_option_b": true,
+      "hdb_verified": true,
+      "two_envelope": false,
+      "under_evaluation": true,
+      "project_code": "BV",
+      "du_count": 438
     },
     {
       "title": "PROJ 1 PT A: BLDG WORKS AT PROJ DS (TOTAL: 235 DUS ) PT B: CONTINGENCY WORKS PROJ 2 PT A: BLDG WORKS AT PROJ DP (TOTAL: 1271 DUS ) PT B:CONTINGENY WORKS",
@@ -142,9 +744,246 @@
       "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000170",
       "tender_type": "building_works",
       "respondents": [],
-      "added": "26 Oct 2026, 15:09"
+      "added": "26 Oct 2026, 15:09",
+      "project_code": "DS",
+      "du_count": 235
+    },
+    {
+      "title": "PROJ1: PT A:BLDG WORKS AT PROJECT DD(TOTAL:1,206 DUS ) PT B:CONTINGENCY WORKS PROJ2: PT A:BLDG WORKS AT PROJECT DO(TOTAL:366 DUS )PT B:CONTINGENCY WORKS",
+      "doc_no": "HDB000ETT26000066",
+      "close_date": "30 Jul 2026 04:00PM",
+      "published": "22 Apr 2026 03:05PM",
+      "status": "Closed",
+      "agency": "Housing and Development Board",
+      "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000066",
+      "tender_type": "building_works",
+      "hdb_verified": true,
+      "requires_option_b": false,
+      "respondents_expected": 10,
+      "respondents_complete": false,
+      "two_envelope": false,
+      "awarded_value": 378000000.0,
+      "awarded_date": "05 Oct 2026",
+      "under_evaluation": true,
+      "respondents": [
+        {
+          "name": "CHIU TENG CONSTRUCTION CO. PTE. LTD.",
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": 1276900000.0,
+          "price_pending": true
+        },
+        {
+          "name": "LIM WEN HENG CONSTRUCTION PTE LTD",
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": 1315500000.0,
+          "price_pending": true
+        },
+        {
+          "name": "CHIP ENG SENG CONTRACTORS (1988) PTE LTD",
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": 1318326000.0,
+          "price_pending": true
+        },
+        {
+          "name": "VICO CONSTRUCTION PTE. LTD.",
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": 1318944000.0,
+          "price_pending": true
+        },
+        {
+          "name": "CHINA CONSTRUCTION (SOUTH PACIFIC) DEVELOPMENT CO. PTE. LTD.",
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": 1323100000.0,
+          "price_pending": true
+        },
+        {
+          "name": "WELLTECH CONSTRUCTION PTE LTD",
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": 1333400000.0,
+          "price_pending": true
+        },
+        {
+          "name": "BHCC CONSTRUCTION PTE. LTD.",
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": 1357052000.0,
+          "price_pending": true
+        },
+        {
+          "name": "TEAMBUILD ENGINEERING & CONSTRUCTION PTE. LTD.",
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": 1366258000.0,
+          "price_pending": true
+        }
+      ],
+      "added": "26 Oct 2026, 15:58",
+      "project_code": "DD",
+      "du_count": 1206
+    },
+    {
+      "title": "PROJ 1: PT A: BLDG WORKS AT PROJ EL (TOTAL: 917 DUS ) PT B: CONTINGENCY WORKS PROJ 2 PT A: BLDG WORKS AT PROJ DT (TOTAL:193 DUS ) PT B:CONTINGENCY WORKS",
+      "doc_no": "HDB000ETT26000050",
+      "close_date": "12 Jun 2026 04:00PM",
+      "published": "27 Mar 2026 03:05PM",
+      "status": "Closed",
+      "agency": "Housing and Development Board",
+      "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000050",
+      "tender_type": "building_works",
+      "hdb_verified": true,
+      "requires_option_b": true,
+      "respondents_expected": 20,
+      "respondents_complete": false,
+      "two_envelope": false,
+      "awarded_value": 255629000.0,
+      "awarded_date": "31 Aug 2026",
+      "under_evaluation": true,
+      "respondents": [
+        {
+          "name": "SH DESIGN & BUILD PTE. LTD.",
+          "opt_a": 62480000.0,
+          "opt_b": 63349000.0,
+          "total_price": 510219000.0,
+          "price_pending": false
+        },
+        {
+          "name": "RIGHT CONSTRUCTION PTE LTD",
+          "opt_a": 62500000.0,
+          "opt_b": 63000000.0,
+          "total_price": 530500000.0,
+          "price_pending": false
+        },
+        {
+          "name": "PRECISE DEVELOPMENT PTE. LTD.",
+          "opt_a": 65770000.0,
+          "opt_b": 66270000.0,
+          "total_price": 545650000.0,
+          "price_pending": false
+        },
+        {
+          "name": "KIMLY CONSTRUCTION PRIVATE LIMITED",
+          "opt_a": 70000000.0,
+          "opt_b": 71000000.0,
+          "total_price": 555466000.0,
+          "price_pending": false
+        },
+        {
+          "name": "CHIU TENG CONSTRUCTION CO. PTE. LTD.",
+          "opt_a": 70000000.0,
+          "opt_b": 70300000.0,
+          "total_price": 566100000.0,
+          "price_pending": false
+        },
+        {
+          "name": "PROGRESSIVE BUILDERS PRIVATE LIMITED",
+          "opt_a": 75500000.0,
+          "opt_b": 76000000.0,
+          "total_price": 570000000.0,
+          "price_pending": false
+        },
+        {
+          "name": "WEE HUR CONSTRUCTION PTE LTD",
+          "opt_a": 75000000.0,
+          "opt_b": 75000000.0,
+          "total_price": 577800000.0,
+          "price_pending": false
+        },
+        {
+          "name": "CHANG HUA CONSTRUCTION PTE LTD",
+          "opt_a": 62379606.0,
+          "opt_b": 62823506.0,
+          "total_price": 580000000.0,
+          "price_pending": false
+        },
+        {
+          "name": "STRAITS CONSTRUCTION SINGAPORE PRIVATE LIMITED",
+          "opt_a": 74661000.0,
+          "opt_b": 75381000.0,
+          "total_price": 580664000.0,
+          "price_pending": false
+        },
+        {
+          "name": "RICH CONSTRUCTION COMPANY PTE. LTD.",
+          "opt_a": 75600000.0,
+          "opt_b": 76000000.0,
+          "total_price": 590000000.0,
+          "price_pending": false
+        },
+        {
+          "name": "CHAN RONG FEN BUILDING CONSTRUCTION PTE LTD",
+          "opt_a": 72000000.0,
+          "opt_b": 72580000.0,
+          "total_price": 593580000.0,
+          "price_pending": false
+        },
+        {
+          "name": "KUAN AIK HONG CONSTRUCTION PTE LTD",
+          "opt_a": 81868000.0,
+          "opt_b": 82335000.0,
+          "total_price": 605303000.0,
+          "price_pending": false
+        },
+        {
+          "name": "BHCC CONSTRUCTION PTE. LTD.",
+          "opt_a": 79000000.0,
+          "opt_b": 80000000.0,
+          "total_price": 607976000.0,
+          "price_pending": false
+        },
+        {
+          "name": "CHIP ENG SENG CONTRACTORS (1988) PTE LTD",
+          "opt_a": 79400000.0,
+          "opt_b": 80200000.0,
+          "total_price": 611376000.0,
+          "price_pending": false
+        },
+        {
+          "name": "KWAN YONG CONSTRUCTION PTE LTD",
+          "opt_a": 78900000.0,
+          "opt_b": 79200000.0,
+          "total_price": 617900000.0,
+          "price_pending": false
+        },
+        {
+          "name": "MASTER CONTRACT SERVICES PTE LTD",
+          "opt_a": 84600000.0,
+          "opt_b": 85500000.0,
+          "total_price": 624100000.0,
+          "price_pending": false
+        },
+        {
+          "name": "LC&T BUILDER (1971) PTE. LTD.",
+          "opt_a": 74000000.0,
+          "opt_b": 74700000.0,
+          "total_price": 626200000.0,
+          "price_pending": false
+        },
+        {
+          "name": "QINGJIAN INTERNATIONAL (SOUTH PACIFIC) GROUP DEVELOPMENT CO., PTE. LTD.",
+          "opt_a": 81600000.0,
+          "opt_b": 82000000.0,
+          "total_price": 632800000.0,
+          "price_pending": false
+        },
+        {
+          "name": "EXPAND CONSTRUCTION PTE LTD",
+          "opt_a": 77000000.0,
+          "opt_b": 77000000.0,
+          "total_price": 644000000.0,
+          "price_pending": false
+        }
+      ],
+      "added": "26 Oct 2026, 15:59",
+      "project_code": "EL",
+      "du_count": 917
     }
   ],
-  "last_updated": "26 Oct 2026, 15:09:18",
-  "run_count": 1
+  "last_updated": "26 Oct 2026, 15:59:02",
+  "run_count": 2
 }
