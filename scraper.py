@@ -1,7 +1,6 @@
 bash
 
-cat /home/claude/gebiz_monitor/scraper.py
-Output
+
 
 """
 scraper.py — GeBIZ Tender Monitor (single-run version for GitHub Actions)
