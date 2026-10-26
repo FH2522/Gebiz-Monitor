@@ -1,4 +1,3 @@
-
 """
 scraper.py — GeBIZ Tender Monitor (single-run version for GitHub Actions)
 
@@ -22,6 +21,10 @@ if sys.platform == "win32":
 # ── Config (same as original) ─────────────────────────────────────────────────
 SEARCH_TERM     = "dwelling unit"
 TITLE_MUST_HAVE = "building works"
+HDB_AGENCY_RE = re.compile(r"\b(?:housing\s*(?:and|&)\s*development\s*board|hdb)\b", re.I)
+PROJECT_RE = re.compile(r"\bproj(?:ect)?\.?\s*[:#-]?\s*([A-Z]{1,5}(?:[-/]\w+)?)\b", re.I)
+BUILDING_RE = re.compile(r"\b(?:building|bldg\.?)\s*(?:works?|wk[s]?)\b", re.I)
+DU_COUNT_RE = re.compile(r"\bTOTAL\s*:?\s*([\d,]+)\s*(?:DU[S]?|DWELLING\s+UNITS?)\b", re.I)
 DATA_FILE       = "gebiz_data.json"
 NOTIFIED_FILE   = "tg_notified.json"
 LOG_FILE        = "gebiz_scraper.log"
@@ -73,9 +76,9 @@ def _proj_info(title):
     Returns (name, du) where name is 'Project XX', 'NxxCxx', or the full title if no code found.
     """
     # Try PROJECT XX
-    m = re.search(r'PROJECT\s+([A-Z]{2,3})\b', title)
+    m = PROJECT_RE.search(title)
     if m:
-        name = f"Project {m.group(1)}"
+        name = f"Project {m.group(1).upper()}"
     else:
         # Try NEIGHBOURHOOD XX CONTRACT XX → NxxCxx
         m2 = re.search(r'NEIGHBOURHOOD\s+(\w+)\s+CONTRACT\s+(\w+)', title, re.IGNORECASE)
@@ -311,22 +314,24 @@ def clean(s):
     return re.sub(r'\s+', ' ', s).strip()
 
 def title_matches(title):
-    """Returns True if title is a building works, valid DU short-form, or valid LPS tender."""
-    t = title.lower()
-    if TITLE_MUST_HAVE in t:
-        return True
-    # DU/DUs short form: must have "TOTAL <number> DU/DUs" pattern (not just any mention of DU)
-    if DU_TITLE_RE.search(title):
-        return True
-    # LPS: must also contain "large panel slab" or "hdb"
-    if 'lps' in t and any(kw in t for kw in LPS_TITLE_MUST_HAVE):
-        return True
-    return False
+    """HDB construction matching: work type + project identifier + DU count."""
+    return bool(BUILDING_RE.search(title) and PROJECT_RE.search(title) and DU_COUNT_RE.search(title))
 
 def is_lps(title):
-    """True if this tender is an LPS type (not building works)."""
+    """Optional LPS discovery retained, but HDB agency verification is mandatory."""
     t = title.lower()
     return 'lps' in t and any(kw in t for kw in LPS_TITLE_MUST_HAVE)
+
+def matches_hdb(tender, detail_text=''):
+    """Do not accept projects from non-HDB agencies or unspecified agencies."""
+    agency = tender.get('agency', '')
+    if not HDB_AGENCY_RE.search(agency):
+        detail_m = re.search(r'\bAgency\s+(Housing\s+(?:and|&)\s+Development\s+Board)\b', detail_text, re.I)
+        if detail_m:
+            tender['agency'] = detail_m.group(1)
+        else:
+            return False
+    return title_matches(tender.get('title', '')) or is_lps(tender.get('title',''))
 
 # ── Scraper ───────────────────────────────────────────────────────────────────
 
@@ -456,7 +461,7 @@ class GeBIZScraper:
         ):
             href, doc_code, title_html = m.group(1), m.group(2), m.group(3)
             title = clean(title_html)
-            if len(title) < 5 or not title_matches(title):
+            if len(title) < 5 or not (title_matches(title) or is_lps(title)):
                 continue
             doc_idx  = html.find('docCode=' + doc_code)
             block    = clean(html[max(0, doc_idx-200): doc_idx+2500])
@@ -486,13 +491,13 @@ class GeBIZScraper:
         page_title_m = re.search(r'PART\s+A\s*:\s*([A-Z\s\(\),;:\.\-\d]+?)(?:PART\s+B|layout_)', text)
         if page_title_m:
             page_title = page_title_m.group(0).strip()
-            if not title_matches(page_title):
+            if not (title_matches(page_title) or is_lps(page_title)):
                 log.warning("  Title mismatch for %s — page shows: %s",
                             tender["doc_no"], page_title[:80])
                 return False
         else:
             # LPS tenders may not have "PART A" — just check the raw title_matches
-            if not title_matches(tender.get("title", "")):
+            if not (title_matches(tender.get("title", "")) or is_lps(tender.get("title", ""))):
                 return False
         return True
 
@@ -534,6 +539,7 @@ class GeBIZScraper:
                 log.warning("  Skipping detail for %s — page title mismatch", tender["doc_no"])
                 return tender
             tender = self._parse_dates(text, tender)
+            tender["hdb_verified"] = matches_hdb(tender, text)
             log.info("  %s: published=%s closing=%s",
                      tender["doc_no"], tender.get("published","?"), tender.get("close_date","?"))
         except Exception as e:
@@ -563,6 +569,12 @@ class GeBIZScraper:
 
             # Grab dates from overview
             tender = self._parse_dates(text, tender)
+            tender["hdb_verified"] = matches_hdb(tender, text)
+            if not tender["hdb_verified"]:
+                log.warning("  Not verified HDB project: %s", tender["doc_no"])
+                return []
+
+            tender['requires_option_b'] = bool(re.search(r'OPTION\s+B\s*[-–]', text, re.I))
 
             # Find the Respondents button
             html = self.page.content()
@@ -571,6 +583,7 @@ class GeBIZScraper:
                 log.warning("  No Respondents tab found for %s", tender["doc_no"])
                 return []
             resp_val = resp_val_m.group(1)
+            tender["respondents_expected"] = int(re.search(r"\((\d+)\)", resp_val).group(1))
             log.info("  Clicking tab: '%s'", resp_val)
 
             # Remove ALL loadingScreen overlay elements — these intercept clicks
@@ -594,7 +607,7 @@ class GeBIZScraper:
             active_tab = active_m.group(1) if active_m else "unknown"
             log.info("  Active tab: %s", active_tab)
 
-            if 'suppliers responded' not in html2:
+            if not re.search(r'\bsuppliers?\s+responded\b', text2, re.I):
                 log.warning("  Respondents content not loaded for %s", tender["doc_no"])
                 return []
 
@@ -610,194 +623,95 @@ class GeBIZScraper:
                     return []
                 log.info("  Project %s confirmed in respondents page", proj_code)
 
+            # Expand respondent accordion entries so item-level details are present.
+            try:
+                expand = self.page.get_by_text('Expand All', exact=True)
+                if expand.count() and expand.first.is_visible():
+                    expand.first.click(timeout=6000)
+                    self.page.wait_for_timeout(1200)
+                    html2 = self.page.content()
+                    text2 = clean(html2)
+            except Exception as exc:
+                log.info('  Expand All not available: %s', exc)
+
             respondents = self._parse_respondents(html2, text2, tender["doc_no"])
+            tender['respondents_complete'] = (len(respondents) == tender['respondents_expected'] and all(r.get('opt_a') is not None and (not tender['requires_option_b'] or r.get('opt_b') is not None) for r in respondents))
+            if not tender['respondents_complete']:
+                log.warning('  INCOMPLETE %s: scraped %d / expected %d (or prices missing)',
+                            tender['doc_no'], len(respondents), tender['respondents_expected'])
             log.info("  Respondents parsed: %d", len(respondents))
 
-            # For two-envelope tenders, tag and scrape award tab only if actually awarded.
-            # Reliable rule: Award tab button ONLY appears after the tender is awarded.
-            # "under evaluation" AND "pending award" both have NO Award tab — treat same.
-            if 'two envelope tender' in html2.lower():
-                tender["two_envelope"] = True
-                has_award_tab = bool(re.search(r'value="Award\s*\(\d+\)"', html2))
-                if has_award_tab:
-                    # Fully awarded — scrape winner + value from Award tab
-                    tender = self._parse_award(html2, text2, tender)
-                    tender.pop("under_evaluation", None)
-                    log.info("  Two-envelope: Award tab found — scraping award details")
-                else:
-                    # Still pending (under evaluation or pending award) — names only
-                    tender["under_evaluation"] = True
-                    log.info("  Two-envelope: no Award tab — pending (evaluation/pending award)")
-
+            tender['two_envelope'] = bool(re.search(r'Two Envelope Bidding\s+Yes\b',text,re.I))
+            # Only an actual awarded record can justify Awarded classification.
+            award_button = re.search(r'value="(Award\s*\(\d+\))"',html2,re.I)
+            if award_button:
+                tender = self._parse_award(html2,text2,tender)
+            tender['under_evaluation'] = not bool(tender.get('awarded_to'))
+            tender['status'] = 'Awarded' if tender.get('awarded_to') else 'Closed'
             return respondents
 
         except Exception as e:
             log.warning("  Respondent error %s: %s", tender.get("doc_no","?"), e)
             return []
     def _parse_respondents(self, html, text, doc_no):
+        """Parse respondent accordion headings and their nested item bids.
+
+        Respondent name + GeBIZ total are the separators. Only prices inside
+        each respondent's own Option A/B blocks are attributed to that supplier.
+        An incomplete parse is flagged by the caller; it is NOT considered zero bids.
         """
-        Handles two GeBIZ tender structures:
-
-        1. STANDARD tender: all respondents shown with full Option A / Option B prices.
-           Each accordion block: "NNN,NNN,NNN.00 (SGD) COMPANY NAME ... OPTION A - ... OPTION B - ..."
-
-        2. TWO-ENVELOPE AWARDED tender:
-           - Shows notice: "This is a two envelope tender..."
-           - "SHORTLISTED SUPPLIER(S)" section with prices (accordion, same format)
-           - Non-shortlisted suppliers listed but no prices shown
-           - Award tab: winner + awarded value
-           For this type we store:
-             awarded_to, awarded_value, awarded_date  on the tender
-             respondents = shortlisted suppliers with their prices (like standard)
-        """
-        respondents = []
-
-        # ── Detect two-envelope awarded tender ────────────────────────────────
-        is_two_envelope  = 'two envelope tender' in html.lower()
-        under_evaluation = is_two_envelope and 'under evaluation' in html.lower()
-        if is_two_envelope:
-            log.info("  Two-envelope tender detected for %s (under_eval=%s)", doc_no, under_evaluation)
-
-        # ── Find respondent section ────────────────────────────────────────────
-        idx = text.find('suppliers responded')
-        if idx < 0:
-            log.warning("  \'suppliers responded\' not found for %s", doc_no)
+        from bs4 import BeautifulSoup
+        from html import unescape
+        soup = BeautifulSoup(html, 'html.parser')
+        # Preserve small text-node boundaries, unlike collapsing whole-page HTML.
+        chunks = [re.sub(r'\s+', ' ', unescape(t)).strip()
+                  for t in soup.stripped_strings]
+        chunks = [v for v in chunks if v]
+        # Determine the start of the respondents content.
+        head_pos = next((i for i,c in enumerate(chunks)
+                         if re.search(r'\b\d+\s+suppliers?\s+responded\b',c,re.I)),None)
+        if head_pos is None:
+            log.warning('Respondents view absent for %s',doc_no)
             return []
-        section = text[idx:]
-
-        # For two-envelope: restrict to SHORTLISTED section only
-        if is_two_envelope:
-            sl_idx = section.find('SHORTLISTED SUPPLIER')
-            if sl_idx >= 0:
-                section = section[sl_idx:]
-                log.info("  Using shortlisted section only")
-
-        # ── Split into per-respondent blocks ───────────────────────────────────
-        # (?<![,\d]) prevents splitting inside a larger number:
-        #   "1,037,952,000" would otherwise also split at "037,952,000"
-        #   because "," is not a digit and (?<!\d) alone doesn't catch it.
-        # Negative lookahead excludes keywords that follow an amount inside a block.
-        blocks = re.split(
-            r'(?<![,\d])(?=\d{1,3}(?:,\d{3}){2,}\.\d{2}\s*\(SGD\)\s+'
-            r'(?!Option|OPTION|Item|Unit|BASE|LOT|Mandatory|Required|Provision|PROVISION|ALTERNATE|See)[A-Z])',
-            section
-        )
-
-        # ── Also try to extract names-only when prices not yet published ────────
-        # GeBIZ sometimes shows company names in accordion before prices are released.
-        # Pattern: company name appears after "inputText_DisableEnterKey" markers.
-        # We use this as fallback when block splitting finds nothing.
-        names_only_pattern = re.compile(
-            r'(?:inputText_DisableEnterKey\([^)]+\)\s*){2,}'  # two consecutive inputText markers
-            r'.*?'
-            r'No\.\s+of\s+Companies.*?'
-            r'(?:Consortium\s+(?:Yes|No)\s+\d+\s+)?'
-            r'(?!Item|Mandatory|Option)',
-            re.DOTALL
-        )
-
-        for block in blocks[1:]:  # skip preamble before first respondent
-            header_m = re.match(
-                r'([\d,]+\.[\d]{2})\s*\(SGD\)\s+([A-Z][^\n]+?)(?:\s+inputText|\s+No\.\s+of)',
-                block
-            )
-            if not header_m:
+        chunks = chunks[head_pos+1:]
+        firm_end = re.compile(r'(?:PTE\.?\s*LTD\.?|PRIVATE LIMITED|LIMITED|LTD\.?|LLP|INC\.?)\s*$', re.I)
+        total_re = re.compile(r'^([\d,]+\.\d{2})\s*\(SGD\)$',re.I)
+        heading_list=[]
+        # Heading name and price can occupy one or two nodes; do not match
+        # arbitrary paragraphs that contain a quoted supplier name.
+        for i,c in enumerate(chunks):
+            combo = re.match(r'^(.*?)\s+([\d,]+\.\d{2})\s*\(SGD\)$',c,re.I)
+            if combo and firm_end.search(combo.group(1)):
+                heading_list.append((i,i+1,combo.group(1),float(combo.group(2).replace(',',''))))
+            elif firm_end.search(c) and i+1<len(chunks):
+                nxt=total_re.match(chunks[i+1])
+                if nxt:
+                    heading_list.append((i,i+2,c,float(nxt.group(1).replace(',',''))))
+        respondents=[]
+        seen=set()
+        for index,(begin,end,name,total) in enumerate(heading_list):
+            if name.upper() in seen:
                 continue
-
-            company   = header_m.group(2).strip()
-            total_amt = float(header_m.group(1).replace(',', ''))
-
-            if len(company) < 5:
-                continue
-            if company.startswith(('PART A', 'PART B', 'Document', 'CONTINGENCY', 'Option', 'Item')):
-                continue
-
-            # Option A unit price (4-decimal SGD)
-            opt_a_m = re.search(
-                r'OPTION\s+A\s*[-:\u2013].*?(\d{1,3}(?:,\d{3})*\.\d{4})\s*\(SGD\)',
-                block, re.DOTALL | re.IGNORECASE
-            )
-            opt_a = float(opt_a_m.group(1).replace(',', '')) if opt_a_m else None
-
-            # Option B unit price
-            opt_b_m = re.search(
-                r'OPTION\s+B\s*[-:\u2013].*?(\d{1,3}(?:,\d{3})*\.\d{4})\s*\(SGD\)',
-                block, re.DOTALL | re.IGNORECASE
-            )
-            opt_b = float(opt_b_m.group(1).replace(',', '')) if opt_b_m else None
-
-            # For two-envelope: no Option A/B labels — use the header total directly
-            if opt_a is None:
-                opt_a = total_amt if total_amt > 0 else None
-            # opt_a stays None if total is 0 (prices not yet published)
-
+            seen.add(name.upper())
+            next_begin=heading_list[index+1][0] if index+1<len(heading_list) else len(chunks)
+            section=' '.join(chunks[end:next_begin])
+            items=list(re.finditer(r'\bItem\s+No\.?\s*(\d+)\b',section,re.I))
+            prices={}
+            for j,it in enumerate(items):
+                block=section[it.end():items[j+1].start() if j+1<len(items) else len(section)]
+                option=re.search(r'\bOPTION\s+([AB])\b',block,re.I)
+                base=re.search(r'\bBASE BID\b',block,re.I)
+                if not option or not base:
+                    continue
+                amounts=re.findall(r'([\d,]+\.\d{2,4})\s*\(SGD\)',block[base.end():],re.I)
+                if amounts:
+                    prices[option.group(1).lower()]=float(amounts[-1].replace(',',''))
             respondents.append({
-                "name":        company,
-                "opt_a":       opt_a,
-                "opt_b":       opt_b,
-                "price_pending": opt_a is None,
-                "shortlisted": True if is_two_envelope else None,
+                'name':name.strip(), 'opt_a':prices.get('a'), 'opt_b':prices.get('b'),
+                'total_price':total, 'price_pending':not bool(prices)
             })
-
-        # ── For two-envelope under evaluation: names shown but NO amounts ──────
-        # GeBIZ message: "prices would only be shown after the award"
-        # Structure: COMPANY_NAME inputText... inputText... No. of Companies N layout_RepaintAllLayouts(); NEXT_COMPANY...
-        # Split on layout_RepaintAllLayouts() calls — each chunk starts with the next company name.
-        if under_evaluation and not respondents:
-            log.info("  Under evaluation — extracting names via layout splitter")
-            chunks = re.split(r'layout_RepaintAllLayouts\(\);\s*', section)
-            for chunk in chunks:
-                chunk = chunk.strip()
-                # First data chunk may start with "Collapse All Expand All COMPANY..."
-                chunk = re.sub(r'^(?:Collapse All\s+|Expand All\s+)+', '', chunk)
-                # Company name = everything before first inputText_DisableEnterKey
-                m = re.match(
-                    r'^([A-Z][A-Z0-9\s&\(\)\.\-,\'/]+?)\s+inputText_DisableEnterKey',
-                    chunk
-                )
-                if not m:
-                    continue
-                name = m.group(1).strip()
-                if len(name) < 5:
-                    continue
-                if name.startswith(('No.', 'Consortium', 'Item', 'Mandatory', 'Expand', 'Collapse')):
-                    continue
-                respondents.append({
-                    "name":          name,
-                    "opt_a":         None,
-                    "opt_b":         None,
-                    "price_pending": True,
-                    "shortlisted":   None,
-                })
-            log.info("  Under-evaluation names extracted: %d", len(respondents))
-
-        # ── Fallback: extract names only if no blocks found (prices not released) ─
-        if not respondents:
-            # Try simpler pattern: find company names near inputText markers
-            name_matches = re.findall(
-                r'([\d,]+\.00)\s*\(SGD\)\s+([A-Z][A-Z\s&\(\)\.\-,\']+?)(?:\s+inputText)',
-                section
-            )
-            for amt_str, company in name_matches:
-                company = company.strip()
-                if len(company) < 5:
-                    continue
-                if company.startswith(('PART A', 'PART B', 'Document', 'CONTINGENCY')):
-                    continue
-                amt = float(amt_str.replace(',', ''))
-                respondents.append({
-                    "name":          company,
-                    "opt_a":         amt if amt > 0 else None,
-                    "opt_b":         None,
-                    "price_pending": amt == 0,
-                    "shortlisted":   True if is_two_envelope else None,
-                })
-            if respondents:
-                log.info("  Fallback name-only parse: %d companies (prices pending)", len(respondents))
-
-        # Sort: priced entries by opt_a ascending, price_pending entries at the end
-        respondents.sort(key=lambda r: (r.get("price_pending") or False, r["opt_a"] or float("inf")))
-        log.info("  Parsed %d respondents for %s", len(respondents), doc_no)
+        respondents.sort(key=lambda r:r.get('total_price') if r.get('total_price') is not None else float('inf'))
+        log.info('Respondents parsed for %s: %d',doc_no,len(respondents))
         return respondents
 
     def _parse_award(self, html, text, tender):
@@ -909,6 +823,8 @@ def run_check():
         if doc_no not in seen_open:
             log.info("NEW OPEN: %s", t["title"][:65])
             t = scraper.visit_detail(t)
+            if not t.get("hdb_verified"):
+                continue
             entry = {**t, "added": datetime.now().strftime("%d %b %Y, %H:%M")}
             data["open"].append(entry)
             seen_open.add(doc_no)
@@ -931,6 +847,8 @@ def run_check():
             # Brand new closed tender
             log.info("NEW CLOSED: %s", t["title"][:60])
             resp = scraper.get_respondents(t)
+            if not t.get("hdb_verified"):
+                continue
             entry = {
                 **t,
                 "respondents": resp,
@@ -940,7 +858,7 @@ def run_check():
             seen_closed.add(doc_no)
             new_closed += 1
             if doc_no not in notified:
-                if entry.get("two_envelope") and not entry.get("under_evaluation"):
+                if entry.get("awarded_to"):
                     tg_send(tg_fmt_awarded(entry))  # 🔔 awarded alert
                 else:
                     tg_send(tg_fmt_closed(entry))   # 🔔 closed alert
@@ -956,9 +874,11 @@ def run_check():
                     continue
                 needs_refetch = (
                     not e.get("respondents") or
+                    not e.get('respondents_complete', False) or
+                    any(r.get('opt_a') is None or (e.get('requires_option_b') and r.get('opt_b') is None) for r in e.get('respondents', [])) or
                     # Re-scrape two-envelope tenders that are still pending
                     # (state may have changed: under eval → pending award → awarded)
-                    (e.get("two_envelope") and not e.get("awarded_to"))
+                    (not e.get("awarded_to"))
                 )
                 if needs_refetch:
                     log.info("RE-FETCHING respondents/state: %s", t["title"][:55])
@@ -969,7 +889,13 @@ def run_check():
                     prev_awarded_to = e.get("awarded_to")
 
                     resp = scraper.get_respondents(t)
-                    e["respondents"] = resp if resp else e.get("respondents", [])
+                    old_resp = e.get('respondents', [])
+                    if resp and ((len(resp) > len(old_resp)) or (len(resp) == len(old_resp) and sum(r.get('opt_a') is not None for r in resp) >= sum(r.get('opt_a') is not None for r in old_resp))):
+                        e['respondents'] = resp
+                    elif resp:
+                        log.warning('  Retaining previous respondents (%d vs new %d)', len(old_resp), len(resp))
+                    for extra in ('respondents_expected', 'respondents_complete', 'requires_option_b', 'hdb_verified', 'status'):
+                        if extra in t: e[extra] = t[extra]
 
                     # Sync state flags set by get_respondents onto stored entry
                     for flag in ("two_envelope", "under_evaluation", "awarded_to", "awarded_value", "awarded_date"):
@@ -1012,6 +938,14 @@ def run_check():
     closed_doc_nos = {t["doc_no"] for t in data["closed"]}
     data["open"] = [t for t in data["open"] if t["doc_no"] not in closed_doc_nos]
 
+    # Retain legacy records only if they pass the updated title filter.
+    # Existing records without verified agency are kept for review instead of
+    # silently discarding history; new entries require HDB verification.
+    for row in data['open'] + data['closed']:
+        project = PROJECT_RE.search(row.get('title', ''))
+        du = DU_COUNT_RE.search(row.get('title', ''))
+        if project: row['project_code'] = project.group(1).upper()
+        if du: row['du_count'] = int(du.group(1).replace(',', ''))
     save_data(data)
     scraper.stop()
     log.info("Done. +%d open +%d closed. Total: %d open %d closed.",
