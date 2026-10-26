@@ -1,7 +1,5 @@
 bash
 
-cat /home/claude/gebiz_monitor/bot.py
-Output
 
 """
 bot.py — GeBIZ Telegram Bot (long-running, runs on your local machine)
