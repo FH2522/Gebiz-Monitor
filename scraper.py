@@ -251,8 +251,8 @@ def tg_summary(data):
     """Format a /summary command response. Returns the overview only — details sent separately."""
     open_t    = data.get('open', [])
     closed_t  = data.get('closed', [])
-    awarded_t = [t for t in closed_t if t.get('two_envelope') and not t.get('under_evaluation')]
-    normal_t  = [t for t in closed_t if not t.get('two_envelope') or t.get('under_evaluation')]
+    awarded_t = [t for t in closed_t if t.get('status') == 'Awarded' or t.get('awarded_to')]
+    normal_t  = [t for t in closed_t if not (t.get('status') == 'Awarded' or t.get('awarded_to'))]
 
     lines = [
         "📊 <b>GeBIZ Monitor — Summary</b>",
@@ -581,6 +581,9 @@ class GeBIZScraper:
             resp_val_m = re.search(r'value="(Respondents\s*\(\d+\))"', html)
             if not resp_val_m:
                 log.warning("  No Respondents tab found for %s", tender["doc_no"])
+                self._parse_award(html, text, tender)
+                tender['status'] = 'Awarded' if tender.get('award_confirmed') else 'Closed'
+                tender['under_evaluation'] = tender['status'] != 'Awarded'
                 return []
             resp_val = resp_val_m.group(1)
             tender["respondents_expected"] = int(re.search(r"\((\d+)\)", resp_val).group(1))
@@ -635,7 +638,7 @@ class GeBIZScraper:
                 log.info('  Expand All not available: %s', exc)
 
             respondents = self._parse_respondents(html2, text2, tender["doc_no"])
-            tender['respondents_complete'] = (len(respondents) == tender['respondents_expected'] and all(r.get('opt_a') is not None and (not tender['requires_option_b'] or r.get('opt_b') is not None) for r in respondents))
+            tender['respondents_complete'] = (len(respondents) == tender['respondents_expected'])
             if not tender['respondents_complete']:
                 log.warning('  INCOMPLETE %s: scraped %d / expected %d (or prices missing)',
                             tender['doc_no'], len(respondents), tender['respondents_expected'])
@@ -646,120 +649,144 @@ class GeBIZScraper:
             award_button = re.search(r'value="(Award\s*\(\d+\))"',html2,re.I)
             if award_button:
                 tender = self._parse_award(html2,text2,tender)
-            tender['under_evaluation'] = not bool(tender.get('awarded_to'))
-            tender['status'] = 'Awarded' if tender.get('awarded_to') else 'Closed'
+            tender['status'] = 'Awarded' if tender.get('award_confirmed') or tender.get('awarded_to') else 'Closed'
+            tender['under_evaluation'] = tender['status'] != 'Awarded'
             return respondents
 
         except Exception as e:
             log.warning("  Respondent error %s: %s", tender.get("doc_no","?"), e)
             return []
     def _parse_respondents(self, html, text, doc_no):
-        """Parse respondent accordion headings and their nested item bids.
-
-        Respondent name + GeBIZ total are the separators. Only prices inside
-        each respondent's own Option A/B blocks are attributed to that supplier.
-        An incomplete parse is flagged by the caller; it is NOT considered zero bids.
+        """Read shortlisted and non-shortlisted suppliers without treating absent
+        prices as absent respondents. Company-level total and option-level bids
+        are deliberately separate fields.
         """
         from bs4 import BeautifulSoup
         from html import unescape
         soup = BeautifulSoup(html, 'html.parser')
-        # Preserve small text-node boundaries, unlike collapsing whole-page HTML.
-        chunks = [re.sub(r'\s+', ' ', unescape(t)).strip()
-                  for t in soup.stripped_strings]
-        chunks = [v for v in chunks if v]
-        # Determine the start of the respondents content.
-        head_pos = next((i for i,c in enumerate(chunks)
-                         if re.search(r'\b\d+\s+suppliers?\s+responded\b',c,re.I)),None)
-        if head_pos is None:
-            log.warning('Respondents view absent for %s',doc_no)
+        chunks = [re.sub(r'\s+', ' ', unescape(t)).strip() for t in soup.stripped_strings]
+        chunks = [c for c in chunks if c]
+        start = next((i for i,c in enumerate(chunks) if re.search(r'\b\d+\s+suppliers?\s+responded\b', c, re.I)), None)
+        if start is None:
+            log.warning('Respondents view absent for %s', doc_no)
             return []
-        chunks = chunks[head_pos+1:]
+        chunks = chunks[start+1:]
         firm_end = re.compile(r'(?:PTE\.?\s*LTD\.?|PRIVATE LIMITED|LIMITED|LTD\.?|LLP|INC\.?)\s*$', re.I)
-        total_re = re.compile(r'^([\d,]+\.\d{2})\s*\(SGD\)$',re.I)
-        heading_list=[]
-        # Heading name and price can occupy one or two nodes; do not match
-        # arbitrary paragraphs that contain a quoted supplier name.
+        amount = re.compile(r'^([\d,]+\.\d{2})\s*(?:\(SGD\))?$', re.I)
+        embedded = re.compile(r'^(.*?)\s+([\d,]+\.\d{2})\s*\(SGD\)$', re.I)
+        headings = []
+        shortlisted = None
         for i,c in enumerate(chunks):
-            combo = re.match(r'^(.*?)\s+([\d,]+\.\d{2})\s*\(SGD\)$',c,re.I)
-            if combo and firm_end.search(combo.group(1)):
-                heading_list.append((i,i+1,combo.group(1),float(combo.group(2).replace(',',''))))
-            elif firm_end.search(c) and i+1<len(chunks):
-                nxt=total_re.match(chunks[i+1])
-                if nxt:
-                    heading_list.append((i,i+2,c,float(nxt.group(1).replace(',',''))))
-        respondents=[]
-        seen=set()
-        for index,(begin,end,name,total) in enumerate(heading_list):
-            if name.upper() in seen:
+            if re.match(r'^NOT\s+SHORTLISTED\s+SUPPLIER', c, re.I):
+                shortlisted = False
                 continue
-            seen.add(name.upper())
-            next_begin=heading_list[index+1][0] if index+1<len(heading_list) else len(chunks)
+            if re.match(r'^SHORTLISTED\s+SUPPLIER', c, re.I):
+                shortlisted = True
+                continue
+            if shortlisted is None:
+                continue
+            match = embedded.match(c)
+            if match and firm_end.search(match.group(1)):
+                headings.append((i,i+1,match.group(1).strip(),float(match.group(2).replace(',','')),shortlisted))
+            elif firm_end.search(c):
+                # Only a company heading is followed by a total, an accordion
+                # control, or a new section. Do not use names found inside bids.
+                following = chunks[i+1] if i+1 < len(chunks) else ''
+                m = amount.match(following)
+                if m:
+                    headings.append((i,i+2,c,float(m.group(1).replace(',','')),shortlisted))
+                elif not shortlisted and (not following or re.match(r'^(?:Expand|Collapse|No\. of Companies|Consortium|NOT\s+SHORTLISTED|SHORTLISTED)',following,re.I) or firm_end.search(following)):
+                    headings.append((i,i+1,c,None,False))
+        # If a not-shortlisted company is the last row, it may have no following
+        # text; the explicit NOT SHORTLISTED section remains authoritative.
+        result=[]; seen=set()
+        for idx,(begin,end,name,total,is_shortlisted) in enumerate(headings):
+            key=re.sub(r'\W+','',name).upper()
+            if key in seen: continue
+            seen.add(key)
+            next_begin=headings[idx+1][0] if idx+1 < len(headings) else len(chunks)
             section=' '.join(chunks[end:next_begin])
             items=list(re.finditer(r'\bItem\s+No\.?\s*(\d+)\b',section,re.I))
             prices={}
             for j,it in enumerate(items):
                 block=section[it.end():items[j+1].start() if j+1<len(items) else len(section)]
                 option=re.search(r'\bOPTION\s+([AB])\b',block,re.I)
-                base=re.search(r'\bBASE BID\b',block,re.I)
-                if not option or not base:
-                    continue
+                # Some 2-envelope projects use OPTION 2A / 2B.
+                if not option:
+                    option=re.search(r'\bOPTION\s+\d+\s*([AB])\b',block,re.I)
+                base=re.search(r'\bBASE\s+BID\b',block,re.I)
+                if not option or not base: continue
                 amounts=re.findall(r'([\d,]+\.\d{2,4})\s*\(SGD\)',block[base.end():],re.I)
                 if amounts:
                     prices[option.group(1).lower()]=float(amounts[-1].replace(',',''))
-            respondents.append({
-                'name':name.strip(), 'opt_a':prices.get('a'), 'opt_b':prices.get('b'),
-                'total_price':total, 'price_pending':not bool(prices)
-            })
-        respondents.sort(key=lambda r:r.get('total_price') if r.get('total_price') is not None else float('inf'))
-        log.info('Respondents parsed for %s: %d',doc_no,len(respondents))
-        return respondents
+            result.append({'name':name,'shortlisted':is_shortlisted,
+                'opt_a':prices.get('a'), 'opt_b':prices.get('b'),
+                'total_price':total, 'price_pending':not bool(prices)})
+        result.sort(key=lambda r: (not r['shortlisted'], r['total_price'] if r['total_price'] is not None else float('inf')))
+        log.info('Respondents parsed for %s: %d (%d shortlisted / %d not shortlisted)',
+                 doc_no,len(result),sum(r['shortlisted'] for r in result),sum(not r['shortlisted'] for r in result))
+        return result
 
     def _parse_award(self, html, text, tender):
-        """
-        For awarded two-envelope tenders: click Award tab and extract
-        winner name, awarded value, awarded date.
+        """Open the official Award tab and capture winner + each awarded item.
+        The Award tab's own fields are the source of truth, never bid rankings.
         """
         try:
-            # Find and click the Award tab
-            award_btn_m = re.search(r'value="(Award\s*\(\d+\))"', html)
-            if not award_btn_m:
-                return tender
-            award_val = award_btn_m.group(1)
-
+            m = re.search(r'value="(Award\s*\((\d+)\))"',html,re.I)
+            if not m or int(m.group(2)) < 1: return tender
             self.page.evaluate("""() => {
-                document.querySelectorAll('[class*="loadingScreen"]').forEach(el => el.remove());
-                document.querySelectorAll('[id*="loadingScreen"]').forEach(el => el.remove());
+                document.querySelectorAll('[class*="loadingScreen"], [id*="loadingScreen"]').forEach(el => el.remove());
             }""")
-            btn = self.page.locator(f'input[value="{award_val}"]').first
-            btn.click()
-            self.page.wait_for_load_state("networkidle")
+            self.page.locator(f'input[value="{m.group(1)}"]').first.click()
+            self.page.wait_for_load_state('networkidle')
             time.sleep(2)
-
-            award_html = self.page.content()
-            award_text = clean(award_html)
-
-            # Awarded to (company name follows "Awarded to" section)
-            awarded_to_m = re.search(r'Awarded to\s+([A-Z][A-Z0-9&\(\)\.\-,\s]+?)\ +(?:No[\s\.]|Address|Consortium\b|Awarded\b)', award_text)
-            awarded_val_m = re.search(r'Total Awarded Value\s+([\d,]+\.\d{2})\s*\(SGD\)', award_text)
-            awarded_date_m = re.search(r'Awarded Date\s+(\d{1,2}\s+\w+\s+\d{4})', award_text)
-
-            if awarded_to_m:
-                tender["awarded_to"] = awarded_to_m.group(1).strip()
-            if awarded_val_m:
-                tender["awarded_value"] = float(awarded_val_m.group(1).replace(',', ''))
-            if awarded_date_m:
-                tender["awarded_date"] = awarded_date_m.group(1).strip()
-
-            log.info("  Award: %s — $%s",
-                     tender.get("awarded_to","?"),
-                     f'{tender.get("awarded_value",0):,.0f}')
-        except Exception as e:
-            log.warning("  Award tab error for %s: %s", tender.get("doc_no","?"), e)
+            from bs4 import BeautifulSoup
+            soup=BeautifulSoup(self.page.content(),'html.parser')
+            nodes=[re.sub(r'\s+',' ',v).strip() for v in soup.stripped_strings]
+            nodes=[v for v in nodes if v]
+            award_text=' '.join(nodes)
+            # Verify we remain on the same tender, if reference is visible.
+            ref=tender.get('reference_no') or tender.get('ref_no')
+            if ref and re.search(r'PCG-TN\d+',award_text,re.I) and ref not in award_text:
+                log.warning('Award tab tender mismatch: %s',tender.get('doc_no'))
+                return tender
+            value_m=re.search(r'\bTotal Awarded Value\s*:?(?:\s+S\$)?\s*([\d,]+\.\d{2})',award_text,re.I)
+            date_m=re.search(r'\bAwarded Date\s*:?\s*(\d{1,2}\s+\w+\s+\d{4})',award_text,re.I)
+            winner=None
+            for i,node in enumerate(nodes):
+                if re.fullmatch(r'Awarded to\s*:?',node,re.I) and i+1 < len(nodes):
+                    candidate=nodes[i+1].strip()
+                    if re.search(r'\b(?:PTE\.?\s*LTD\.?|LIMITED|LLP)\b',candidate,re.I):
+                        winner=candidate;break
+                wm=re.match(r'^Awarded to\s*:?\s+(.+)$',node,re.I)
+                if wm and re.search(r'\b(?:PTE\.?\s*LTD\.?|LIMITED|LLP)\b',wm.group(1),re.I):
+                    winner=wm.group(1).strip();break
+            # Item prices are scoped by Item No. (a combined tender can have
+            # Project DD and Project DO under one award).
+            items=[]
+            for im in re.finditer(r'\bItem\s+No\.?\s*(\d+)\b',award_text,re.I):
+                following=award_text[im.end():]
+                next_item=re.search(r'\bItem\s+No\.?\s*\d+\b',following,re.I)
+                block=following[:next_item.start()] if next_item else following
+                opt=re.search(r'\bOPTION\s+([12]?[AB])\b',block,re.I)
+                project=re.search(r'\bPROJECT\s+([A-Z]{1,5})\b',block,re.I)
+                v=re.search(r'\bAwarded Value\s*:?\s*([\d,]+\.\d{2})',block,re.I)
+                if v:
+                    items.append({'item_no':int(im.group(1)),
+                        'option':opt.group(1).upper() if opt else None,
+                        'project':project.group(1).upper() if project else None,
+                        'awarded_value':float(v.group(1).replace(',',''))})
+            if value_m: tender['awarded_value']=float(value_m.group(1).replace(',',''))
+            if date_m: tender['awarded_date']=date_m.group(1)
+            if winner: tender['awarded_to']=winner
+            if items: tender['awarded_items']=items
+            tender['award_confirmed']=bool(value_m or date_m or winner or items)
+            log.info('  Award fields %s: confirmed=%s winner=%s value=%s items=%s',
+                tender.get('doc_no'),tender['award_confirmed'],tender.get('awarded_to'),
+                tender.get('awarded_value'),items)
+        except Exception as exc:
+            log.warning('  Award tab error for %s: %s',tender.get('doc_no'),exc)
         return tender
-
-
-
-# ── Main check ────────────────────────────────────────────────────────────────
 
 def run_check():
     log.info("=" * 55)
@@ -858,7 +885,7 @@ def run_check():
             seen_closed.add(doc_no)
             new_closed += 1
             if doc_no not in notified:
-                if entry.get("awarded_to"):
+                if entry.get("status") == "Awarded" or entry.get("awarded_to"):
                     tg_send(tg_fmt_awarded(entry))  # 🔔 awarded alert
                 else:
                     tg_send(tg_fmt_closed(entry))   # 🔔 closed alert
@@ -875,10 +902,12 @@ def run_check():
                 needs_refetch = (
                     not e.get("respondents") or
                     not e.get('respondents_complete', False) or
-                    any(r.get('opt_a') is None or (e.get('requires_option_b') and r.get('opt_b') is None) for r in e.get('respondents', [])) or
+                    False or
                     # Re-scrape two-envelope tenders that are still pending
                     # (state may have changed: under eval → pending award → awarded)
-                    (not e.get("awarded_to"))
+                    (e.get('status') != 'Awarded') or
+                    not e.get('awarded_to') or
+                    not e.get('awarded_items')
                 )
                 if needs_refetch:
                     log.info("RE-FETCHING respondents/state: %s", t["title"][:55])
@@ -887,6 +916,7 @@ def run_check():
                     was_under_eval  = e.get("under_evaluation", False)
                     was_all_pending = all(r.get("price_pending") for r in e.get("respondents", [{}]))
                     prev_awarded_to = e.get("awarded_to")
+                    was_awarded = e.get('status') == 'Awarded'
 
                     resp = scraper.get_respondents(t)
                     old_resp = e.get('respondents', [])
@@ -898,7 +928,7 @@ def run_check():
                         if extra in t: e[extra] = t[extra]
 
                     # Sync state flags set by get_respondents onto stored entry
-                    for flag in ("two_envelope", "under_evaluation", "awarded_to", "awarded_value", "awarded_date"):
+                    for flag in ("two_envelope", "under_evaluation", "awarded_to", "awarded_value", "awarded_date", "awarded_items", "award_confirmed"):
                         if flag in t:
                             e[flag] = t[flag]
                         elif flag == "under_evaluation" and flag not in t and e.get(flag):
@@ -912,7 +942,7 @@ def run_check():
 
                     # ── Detect state changes and send appropriate notifications ──
                     now_has_prices  = any(not r.get("price_pending") for r in e.get("respondents", []))
-                    now_awarded     = e.get("awarded_to") and not prev_awarded_to
+                    now_awarded     = (e.get('status') == 'Awarded' and not (prev_awarded_to or was_awarded))
 
                     notify_key_prices  = doc_no + "_prices"
                     notify_key_awarded = doc_no + "_awarded"
@@ -945,6 +975,7 @@ def run_check():
         project = PROJECT_RE.search(row.get('title', ''))
         du = DU_COUNT_RE.search(row.get('title', ''))
         if project: row['project_code'] = project.group(1).upper()
+        row['project_codes'] = list(dict.fromkeys(m.group(1).upper() for m in PROJECT_RE.finditer(row.get('title',''))))
         if du: row['du_count'] = int(du.group(1).replace(',', ''))
     save_data(data)
     scraper.stop()
