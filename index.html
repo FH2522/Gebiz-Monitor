@@ -606,7 +606,7 @@
 
   <!-- Awarded -->
   <div class="tab-content" id="tab-awarded">
-    <div class="section-label">Awarded — two-envelope tenders</div>
+    <div class="section-label">Awarded — confirmed award records</div>
     <div id="awarded-panel">
       <div class="empty" style="background:var(--surface);border:1px solid var(--border);border-radius:14px">
         <div class="empty-icon">✦</div><div class="spinner"></div>
@@ -664,8 +664,8 @@ function renderAll(data) {
   document.getElementById('last-scraped').textContent = data.last_updated || '—';
   document.getElementById('run-count').textContent  = data.run_count || '0';
   // GeBIZ has non-two-envelope awards too: classify only by real award data.
-  const nonAwarded = closed.filter(t => !t.awarded_to);
-  const awarded    = closed.filter(t => !!t.awarded_to);
+  const nonAwarded = closed.filter(t => !(t.status === 'Awarded' || t.awarded_to));
+  const awarded    = closed.filter(t => t.status === 'Awarded' || !!t.awarded_to);
   renderOpen(open);
   renderClosed(nonAwarded);
   renderAwarded(awarded);
@@ -761,6 +761,7 @@ function renderClosedCard(t) {
 
   const rows = resp.map((r, i) => {
     const isPending = !!r.price_pending;
+    const notShortlisted = r.shortlisted === false;
     const isWinner  = !!t.awarded_to && r.name === t.awarded_to;
     const isLowest  = !isPending && r.opt_a != null && minA > 0 && Number(r.opt_a) === minA;
     const abSum     = r.total_price != null ? Number(r.total_price) : (r.opt_a != null && r.opt_b != null ? Number(r.opt_a) + Number(r.opt_b) : null);
@@ -785,6 +786,7 @@ function renderClosedCard(t) {
       '<td class="row-num">' + String(i+1).padStart(2,'0') + '</td>' +
       '<td class="company-cell' + (isLowest ? ' is-lowest' : isWinner ? ' is-winner' : '') + '">' +
         (isLowest ? '↓ ' : '') + (isWinner ? '✦ ' : '') + r.name +
+        (notShortlisted ? '<span class="badge" style="margin-left:6px;background:#f5f5f7;color:#86868b">NOT SHORTLISTED</span>' : '') +
         (isWinner ? '<span class="award-tag">AWARDED</span>' : '') +
       '</td>' +
       '<td class="price-cell' + (isLowest ? ' is-lowest' : '') + '">' + priceDisplay + '</td>' +
@@ -804,12 +806,16 @@ function renderClosedCard(t) {
   const spreadPct   = (lowestBid && highestBid && lowestBid.opt_a)
     ? ((highestBid.opt_a - lowestBid.opt_a) / lowestBid.opt_a * 100).toFixed(1) + '%'
     : 'N/A';
-  const pendingNote = hasPending
+  const pendingNote = resp.some(r => r.price_pending && r.shortlisted !== false)
     ? '<div style="font-size:11px;color:var(--muted);margin-top:4px">⏳ Prices not yet published for some respondents — will update automatically.</div>'
     : '';
-  const isUnderEval = !t.awarded_to;
+  const isUnderEval = !(t.status === 'Awarded' || t.awarded_to);
 
-  const summaryLines = isTwoEnv
+  const summaryLines = (t.status === 'Awarded' || t.awarded_to)
+    ? [(t.awarded_to ? '✦ Awarded to <strong>' + t.awarded_to + '</strong>' : '✦ Award confirmed — winning company pending'),
+       (t.awarded_value != null ? 'Award value: ' + fmtp(t.awarded_value) : ''),
+       (t.awarded_date ? 'Awarded date: ' + t.awarded_date : '')]
+    : isTwoEnv
     ? (isUnderEval
       ? [
           '⏳ <strong>Under Evaluation</strong> — prices will be published after the award.',
@@ -835,6 +841,11 @@ function renderClosedCard(t) {
         : '<span class="badge badge-awarded" style="margin-left:8px;vertical-align:middle">TWO-ENVELOPE · AWARDED</span>')
     : '';
 
+  const awardItems = Array.isArray(t.awarded_items) ? t.awarded_items : [];
+  const awardsDetail = (t.status === 'Awarded' && awardItems.length)
+    ? '<div class="summary-box"><div class="summary-label">Awarded Items</div>' + awardItems.map(a =>
+      '<div>Item ' + a.item_no + (a.project ? ' · Project ' + a.project : '') +
+      (a.option ? ' · Option ' + a.option : '') + ' — <strong>' + fmtp(a.awarded_value) + '</strong></div>').join('') + '</div>' : '';
   const table = resp.length
     ? '<table class="resp-table">' +
         '<thead><tr><th style="width:36px">#</th><th>Company</th><th>Option A</th>' + optBHeader + '<th>vs Lowest</th></tr></thead>' +
@@ -845,7 +856,7 @@ function renderClosedCard(t) {
         (incomplete ? '<div style="color:#a45b00">⚠ Data incomplete: ' + resp.length + ' of ' + expected + ' respondents; retry scheduled.</div>' : '') +
         summaryLines.filter(Boolean).map(l => '<div>' + l + '</div>').join('') +
         pendingNote +
-      '</div>'
+      '</div>' + awardsDetail
     : '<div class="empty">Respondent data not yet available.</div>';
 
   return '<div class="panel">' +
@@ -862,7 +873,7 @@ function renderClosedCard(t) {
           (t.url ? '<span style="color:var(--border2)">·</span><a href="' + t.url + '" target="_blank">↗ GeBIZ</a>' : '') +
         '</div>' +
       '</div>' +
-      '<span class="badge ' + (t.awarded_to ? 'badge-awarded' : 'badge-closed') + '">' + (t.awarded_to ? 'AWARDED' : 'CLOSED') + '</span>' +
+      '<span class="badge ' + (t.status === 'Awarded' ? 'badge-awarded' : 'badge-closed') + '">' + (t.status === 'Awarded' ? 'AWARDED' : 'CLOSED') + '</span>' +
     '</div>' +
     table +
   '</div>';
