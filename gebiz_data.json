@@ -278,7 +278,7 @@
       ],
       "added": "26 Oct 2026, 15:08",
       "respondents_expected": 26,
-      "respondents_complete": false,
+      "respondents_complete": true,
       "requires_option_b": true,
       "hdb_verified": true,
       "two_envelope": false,
@@ -592,7 +592,7 @@
       ],
       "added": "26 Oct 2026, 15:09",
       "respondents_expected": 19,
-      "respondents_complete": false,
+      "respondents_complete": true,
       "requires_option_b": true,
       "hdb_verified": true,
       "two_envelope": false,
@@ -735,7 +735,7 @@
       ],
       "added": "26 Oct 2026, 15:09",
       "respondents_expected": 17,
-      "respondents_complete": false,
+      "respondents_complete": true,
       "requires_option_b": true,
       "hdb_verified": true,
       "two_envelope": false,
@@ -1076,8 +1076,8 @@
       ]
     }
   ],
-  "last_updated": "27 Oct 2026, 12:34:52",
-  "run_count": 8,
+  "last_updated": "27 Oct 2026, 16:50:31",
+  "run_count": 9,
   "cancelled": [
     {
       "title": "PROJECT 1: BUILDING WORKS AT PROJECT EH (TOTAL: 834 DWELLING UNITS ); PROJECT 2: ROAD IMPROVEMENT AND INFRASTRUCTURE WORKS AT PROJECT EH",
