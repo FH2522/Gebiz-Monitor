@@ -973,12 +973,48 @@ def run_check():
 
                     resp = scraper.get_respondents(t)
                     old_resp = e.get('respondents', [])
-                    if resp and ((len(resp) > len(old_resp)) or (len(resp) == len(old_resp) and sum(len(r.get('bid_items') or []) for r in resp) >= sum(len(r.get('bid_items') or []) for r in old_resp))):
-                        e['respondents'] = resp
-                    elif resp:
-                        log.warning('  Retaining previous respondents (%d vs new %d)', len(old_resp), len(resp))
-                    for extra in ('respondents_expected', 'respondents_complete', 'requires_option_b', 'hdb_verified', 'status'):
+                    if resp:
+                        # Field-level merge: a successful re-scrape of company names must
+                        # NEVER erase valid prices or option rows from earlier runs.
+                        # Match company names, not row order (GeBIZ can re-sort rows).
+                        def _company_key(name):
+                            return re.sub(r'[^A-Z0-9]', '', str(name).upper())
+                        old_by_name = {_company_key(r.get('name','')):r for r in old_resp}
+                        new_by_name = {_company_key(r.get('name','')):r for r in resp}
+                        merged = []
+                        for key in dict.fromkeys([*new_by_name, *old_by_name]):
+                            new_r = new_by_name.get(key)
+                            old_r = old_by_name.get(key)
+                            if not new_r:
+                                merged.append(old_r)  # Never silently lose a firm
+                                continue
+                            if not old_r:
+                                merged.append(new_r)
+                                continue
+                            combo = dict(old_r)
+                            for field,val in new_r.items():
+                                if field == 'bid_items':
+                                    old_items = combo.get('bid_items') or []
+                                    identity = lambda v: (str(v.get('item_no')), str(v.get('project') or '').upper(), str(v.get('option') or '').upper())
+                                    known = {identity(v):v for v in old_items}
+                                    for v in (val or []):
+                                        if v.get('price') is not None:
+                                            known[identity(v)] = v
+                                    combo['bid_items'] = list(known.values())
+                                elif field in ('opt_a','opt_b','total_price'):
+                                    if val is not None: combo[field] = val
+                                elif field == 'price_pending':
+                                    combo[field] = bool(val and not combo.get('bid_items') and combo.get('opt_a') is None and combo.get('opt_b') is None)
+                                elif val is not None: combo[field] = val
+                            merged.append(combo)
+                        e['respondents'] = merged
+                        log.info('  Merged respondent prices safely: %d old / %d fetched / %d retained',len(old_resp),len(resp),len(merged))
+                    else:
+                        log.warning('  No new respondents — keeping %d existing entries',len(old_resp))
+                    for extra in ('respondents_expected', 'requires_option_b', 'hdb_verified', 'status'):
                         if extra in t: e[extra] = t[extra]
+
+                    e['respondents_complete'] = (len(e.get('respondents',[])) == int(e.get('respondents_expected') or len(e.get('respondents',[]))))
 
                     # Sync state flags set by get_respondents onto stored entry
                     for flag in ("two_envelope", "under_evaluation", "awarded_to", "awarded_value", "awarded_date", "awarded_items", "award_confirmed"):
