@@ -84,27 +84,6 @@
   ],
   "closed": [
     {
-      "title": "PROJECT 1: BUILDING WORKS AT PROJECT EH (TOTAL: 834 DWELLING UNITS ); PROJECT 2: ROAD IMPROVEMENT AND INFRASTRUCTURE WORKS AT PROJECT EH",
-      "doc_no": "HDB000ETT26000173",
-      "close_date": "06 Nov 2026 04:00PM",
-      "published": "25 Sep 2026 10:20AM",
-      "status": "Closed",
-      "agency": "Housing and Development Board",
-      "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000173",
-      "tender_type": "building_works",
-      "respondents": [],
-      "added": "26 Oct 2026, 15:08",
-      "requires_option_b": true,
-      "hdb_verified": true,
-      "project_code": "ECT",
-      "du_count": 834,
-      "under_evaluation": true,
-      "project_codes": [
-        "ECT",
-        "EH"
-      ]
-    },
-    {
       "title": "PART A: BUILDING WORKS AT PROJECT GY (TOTAL: 711 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
       "doc_no": "HDB000ETT26000132",
       "close_date": "22 Oct 2026 04:00PM",
@@ -808,70 +787,79 @@
         {
           "name": "CHIU TENG CONSTRUCTION CO. PTE. LTD.",
           "shortlisted": true,
-          "opt_a": 94200000.0,
-          "opt_b": 94700000.0,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
           "total_price": 1276900000.0,
-          "price_pending": false
+          "price_pending": true
         },
         {
           "name": "LIM WEN HENG CONSTRUCTION PTE LTD",
           "shortlisted": true,
-          "opt_a": 91500000.0,
-          "opt_b": 92000000.0,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
           "total_price": 1315500000.0,
-          "price_pending": false
+          "price_pending": true
         },
         {
           "name": "CHIP ENG SENG CONTRACTORS (1988) PTE LTD",
           "shortlisted": true,
-          "opt_a": 94720000.0,
-          "opt_b": 95400000.0,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
           "total_price": 1318326000.0,
-          "price_pending": false
+          "price_pending": true
         },
         {
           "name": "VICO CONSTRUCTION PTE. LTD.",
           "shortlisted": true,
-          "opt_a": 93007000.0,
-          "opt_b": 93907000.0,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
           "total_price": 1318944000.0,
-          "price_pending": false
+          "price_pending": true
         },
         {
           "name": "CHINA CONSTRUCTION (SOUTH PACIFIC) DEVELOPMENT CO. PTE. LTD.",
           "shortlisted": true,
-          "opt_a": 91700000.0,
-          "opt_b": 92200000.0,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
           "total_price": 1323100000.0,
-          "price_pending": false
+          "price_pending": true
         },
         {
           "name": "WELLTECH CONSTRUCTION PTE LTD",
           "shortlisted": true,
-          "opt_a": 98000000.0,
-          "opt_b": 99000000.0,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
           "total_price": 1333400000.0,
-          "price_pending": false
+          "price_pending": true
         },
         {
           "name": "BHCC CONSTRUCTION PTE. LTD.",
           "shortlisted": true,
-          "opt_a": 100000000.0,
-          "opt_b": 100300000.0,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
           "total_price": 1357052000.0,
-          "price_pending": false
+          "price_pending": true
         },
         {
           "name": "TEAMBUILD ENGINEERING & CONSTRUCTION PTE. LTD.",
           "shortlisted": true,
-          "opt_a": 113608000.0,
-          "opt_b": 114518000.0,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
           "total_price": 1366258000.0,
-          "price_pending": false
+          "price_pending": true
         },
         {
           "name": "KAH ENGINEERING (1986) PTE. LTD.",
           "shortlisted": false,
+          "bid_items": [],
           "opt_a": null,
           "opt_b": null,
           "total_price": null,
@@ -880,6 +868,7 @@
         {
           "name": "RIGHT CONSTRUCTION PTE LTD",
           "shortlisted": false,
+          "bid_items": [],
           "opt_a": null,
           "opt_b": null,
           "total_price": null,
@@ -1087,6 +1076,18 @@
       ]
     }
   ],
-  "last_updated": "27 Oct 2026, 11:08:05",
-  "run_count": 6
+  "last_updated": "27 Oct 2026, 11:50:56",
+  "run_count": 7,
+  "cancelled": [
+    {
+      "title": "PROJECT 1: BUILDING WORKS AT PROJECT EH (TOTAL: 834 DWELLING UNITS ); PROJECT 2: ROAD IMPROVEMENT AND INFRASTRUCTURE WORKS AT PROJECT EH",
+      "doc_no": "HDB000ETT26000173",
+      "close_date": "",
+      "published": "",
+      "status": "Cancelled",
+      "agency": "Housing and Development Board",
+      "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000173",
+      "tender_type": "building_works"
+    }
+  ]
 }
