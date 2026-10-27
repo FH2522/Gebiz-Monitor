@@ -464,6 +464,13 @@ class GeBIZScraper:
             if len(title) < 5 or not (title_matches(title) or is_lps(title)):
                 continue
             doc_idx  = html.find('docCode=' + doc_code)
+            # A cancelled tender is still listed under GeBIZ's "Closed" search tab.
+            # Inspect THIS result only; never use the whole page (other cards may
+            # be cancelled and would contaminate the classification).
+            next_card = html.find('/ptn/opportunity/directlink.xhtml?docCode=', m.end())
+            card_end = next_card if next_card != -1 else min(len(html), m.end() + 6000)
+            card_text = clean(html[m.start():card_end])
+            is_cancelled = bool(re.search(r'\bCANCELLED\b', card_text, re.I))
             block    = clean(html[max(0, doc_idx-200): doc_idx+2500])
             agency_m = re.search(r'Agency\s+(.+?)\s+(?:Published|Procurement)', block)
             tender_type = "lps" if is_lps(title) else "building_works"
@@ -472,12 +479,12 @@ class GeBIZScraper:
                 "doc_no":       doc_code,
                 "close_date":   "",
                 "published":    "",
-                "status":       status,
+                "status":       "Cancelled" if is_cancelled else status,
                 "agency":       agency_m.group(1).strip() if agency_m else "",
                 "url":          "https://www.gebiz.gov.sg" + href,
                 "tender_type":  tender_type,
             }
-            log.info("  [%s][%s] %s", status, tender_type.upper(), title[:65])
+            log.info("  [%s][%s] %s", "CANCELLED" if is_cancelled else status, tender_type.upper(), title[:65])
         return results
 
     # ── Verify page title matches expected tender ──────────────────────────────
@@ -570,6 +577,9 @@ class GeBIZScraper:
             # Grab dates from overview
             tender = self._parse_dates(text, tender)
             tender["hdb_verified"] = matches_hdb(tender, text)
+            if tender.get('status') == 'Cancelled':
+                log.info('  CANCELLED %s: skipping respondents and award tabs', tender.get('doc_no'))
+                return []
             if not tender["hdb_verified"]:
                 log.warning("  Not verified HDB project: %s", tender["doc_no"])
                 return []
@@ -707,21 +717,39 @@ class GeBIZScraper:
             next_begin=headings[idx+1][0] if idx+1 < len(headings) else len(chunks)
             section=' '.join(chunks[end:next_begin])
             items=list(re.finditer(r'\bItem\s+No\.?\s*(\d+)\b',section,re.I))
-            prices={}
+            bid_items=[]
             for j,it in enumerate(items):
                 block=section[it.end():items[j+1].start() if j+1<len(items) else len(section)]
-                option=re.search(r'\bOPTION\s+([AB])\b',block,re.I)
-                # Some 2-envelope projects use OPTION 2A / 2B.
-                if not option:
-                    option=re.search(r'\bOPTION\s+\d+\s*([AB])\b',block,re.I)
+                # Preserve the full option identifier. In combined tenders,
+                # "1A" / "2B" are different choices from A / B.
+                option=re.search(r'\bOPTION\s+(\d*\s*[AB])\b',block,re.I)
+                project=re.search(r'\bPROJ(?:ECT)?\.?\s*[:#-]?\s*([A-Z]{1,5})\b',block,re.I)
                 base=re.search(r'\bBASE\s+BID\b',block,re.I)
-                if not option or not base: continue
-                amounts=re.findall(r'([\d,]+\.\d{2,4})\s*\(SGD\)',block[base.end():],re.I)
-                if amounts:
-                    prices[option.group(1).lower()]=float(amounts[-1].replace(',',''))
+                if not base: continue
+                # Base-bid block only: ignore company header total and other items.
+                block_after=block[base.end():]
+                for stop in ('ALTERNATIVE BID','OPTIONAL BID','REMARKS'):
+                    stop_match=re.search(r'\b'+stop+r'\b',block_after,re.I)
+                    if stop_match: block_after=block_after[:stop_match.start()]
+                amounts=re.findall(r'([\d,]+\.\d{2,4})\s*\(SGD\)',block_after,re.I)
+                if not amounts: continue
+                raw=option.group(1).replace(' ','').upper() if option else None
+                bid_items.append({'item_no':int(it.group(1)),
+                                  'project':project.group(1).upper() if project else None,
+                                  'option':raw,
+                                  'price':float(amounts[-1].replace(',',''))})
+            # Legacy opt_a/opt_b are populated only for a genuine one-project
+            # A/B tender. Multi-project comparisons must use bid_items.
+            project_codes={v['project'] for v in bid_items if v['project']}
+            legacy={}
+            if len(project_codes)<=1:
+                for bid in bid_items:
+                    if bid['option'] in ('A','B'):
+                        legacy[bid['option']]=bid['price']
             result.append({'name':name,'shortlisted':is_shortlisted,
-                'opt_a':prices.get('a'), 'opt_b':prices.get('b'),
-                'total_price':total, 'price_pending':not bool(prices)})
+                'bid_items':bid_items,
+                'opt_a':legacy.get('A'), 'opt_b':legacy.get('B'),
+                'total_price':total, 'price_pending':not bool(bid_items)})
         result.sort(key=lambda r: (not r['shortlisted'], r['total_price'] if r['total_price'] is not None else float('inf')))
         log.info('Respondents parsed for %s: %d (%d shortlisted / %d not shortlisted)',
                  doc_no,len(result),sum(r['shortlisted'] for r in result),sum(not r['shortlisted'] for r in result))
@@ -768,12 +796,12 @@ class GeBIZScraper:
                 following=award_text[im.end():]
                 next_item=re.search(r'\bItem\s+No\.?\s*\d+\b',following,re.I)
                 block=following[:next_item.start()] if next_item else following
-                opt=re.search(r'\bOPTION\s+([12]?[AB])\b',block,re.I)
+                opt=re.search(r'\bOPTION\s+(\d*\s*[AB])\b',block,re.I)
                 project=re.search(r'\bPROJECT\s+([A-Z]{1,5})\b',block,re.I)
                 v=re.search(r'\bAwarded Value\s*:?\s*([\d,]+\.\d{2})',block,re.I)
                 if v:
                     items.append({'item_no':int(im.group(1)),
-                        'option':opt.group(1).upper() if opt else None,
+                        'option':opt.group(1).replace(' ','').upper() if opt else None,
                         'project':project.group(1).upper() if project else None,
                         'awarded_value':float(v.group(1).replace(',',''))})
             if value_m: tender['awarded_value']=float(value_m.group(1).replace(',',''))
@@ -836,7 +864,28 @@ def run_check():
         save_data(data)
         return
 
-    total_found = len(open_items) + len(closed_items)
+    # GeBIZ's Closed search tab includes CANCELLED tenders. Archive them, but
+    # never present them as Open / Closed / Awarded and never send bid alerts.
+    cancelled_items = {**{k:v for k,v in open_items.items() if v.get('status') == 'Cancelled'},
+                       **{k:v for k,v in closed_items.items() if v.get('status') == 'Cancelled'}}
+    open_items = {k:v for k,v in open_items.items() if v.get('status') != 'Cancelled'}
+    closed_items = {k:v for k,v in closed_items.items() if v.get('status') != 'Cancelled'}
+    known_cancelled = {t['doc_no']: t for t in data.get('cancelled', []) if t.get('doc_no')}
+    for doc_no, item in cancelled_items.items():
+        known_cancelled[doc_no] = {**known_cancelled.get(doc_no, {}), **item, 'status':'Cancelled'}
+        log.info('CANCELLED detected: %s — %s', doc_no, item.get('title','')[:70])
+    cancelled_ids = set(known_cancelled)
+    before_open, before_closed = len(data['open']), len(data['closed'])
+    data['open'] = [t for t in data['open'] if t.get('doc_no') not in cancelled_ids and t.get('status') != 'Cancelled']
+    data['closed'] = [t for t in data['closed'] if t.get('doc_no') not in cancelled_ids and t.get('status') != 'Cancelled']
+    data['cancelled'] = list(known_cancelled.values())
+    if before_open != len(data['open']) or before_closed != len(data['closed']):
+        log.info('Removed cancelled tenders from active dashboard data: open %d->%d closed %d->%d',
+                 before_open, len(data['open']), before_closed, len(data['closed']))
+    seen_open = {t['doc_no'] for t in data['open']}
+    seen_closed = {t['doc_no'] for t in data['closed']}
+
+    total_found = len(open_items) + len(closed_items) + len(cancelled_items)
     if total_found == 0 and prev_total > 0:
         log.warning("0 results — keeping existing data")
         save_data(data)
@@ -847,6 +896,8 @@ def run_check():
     new_open   = 0
     new_closed = 0  # declared here so auto-close block can increment it
     for doc_no, t in open_items.items():
+        if doc_no in cancelled_ids:
+            continue
         if doc_no not in seen_open:
             log.info("NEW OPEN: %s", t["title"][:65])
             t = scraper.visit_detail(t)
@@ -870,6 +921,8 @@ def run_check():
 
     # Process closed tenders from GeBIZ search results
     for doc_no, t in closed_items.items():
+        if doc_no in cancelled_ids:
+            continue
         if doc_no not in seen_closed:
             # Brand new closed tender
             log.info("NEW CLOSED: %s", t["title"][:60])
@@ -902,7 +955,7 @@ def run_check():
                 needs_refetch = (
                     not e.get("respondents") or
                     not e.get('respondents_complete', False) or
-                    False or
+                    any(r.get('shortlisted') is not False and not r.get('bid_items') for r in e.get('respondents', [])) or
                     # Re-scrape two-envelope tenders that are still pending
                     # (state may have changed: under eval → pending award → awarded)
                     (e.get('status') != 'Awarded') or
@@ -920,7 +973,7 @@ def run_check():
 
                     resp = scraper.get_respondents(t)
                     old_resp = e.get('respondents', [])
-                    if resp and ((len(resp) > len(old_resp)) or (len(resp) == len(old_resp) and sum(r.get('opt_a') is not None for r in resp) >= sum(r.get('opt_a') is not None for r in old_resp))):
+                    if resp and ((len(resp) > len(old_resp)) or (len(resp) == len(old_resp) and sum(len(r.get('bid_items') or []) for r in resp) >= sum(len(r.get('bid_items') or []) for r in old_resp))):
                         e['respondents'] = resp
                     elif resp:
                         log.warning('  Retaining previous respondents (%d vs new %d)', len(old_resp), len(resp))
@@ -977,6 +1030,9 @@ def run_check():
         if project: row['project_code'] = project.group(1).upper()
         row['project_codes'] = list(dict.fromkeys(m.group(1).upper() for m in PROJECT_RE.finditer(row.get('title',''))))
         if du: row['du_count'] = int(du.group(1).replace(',', ''))
+    # Defensive cleanup for historical data imported from older scraper versions.
+    data['open'] = [t for t in data['open'] if t.get('status') != 'Cancelled']
+    data['closed'] = [t for t in data['closed'] if t.get('status') != 'Cancelled']
     save_data(data)
     scraper.stop()
     log.info("Done. +%d open +%d closed. Total: %d open %d closed.",
