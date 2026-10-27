@@ -655,9 +655,15 @@ async function loadData() {
   try { renderAll(data); } catch(e) { console.error('Render error:', e); }
 }
 
+function isCancelled(t) {
+  return /^(cancelled|canceled)$/i.test(String(t.status || '').trim());
+}
+
 function renderAll(data) {
-  const open   = data.open   || [];
-  const closed = data.closed || [];
+  // Cancelled tenders sometimes occur in the official Closed search results.
+  // Exclude them even if an old gebiz_data.json still contains these records.
+  const open   = (data.open   || []).filter(t => !isCancelled(t));
+  const closed = (data.closed || []).filter(t => !isCancelled(t));
   document.getElementById('cnt-open').textContent   = open.length;
   document.getElementById('cnt-closed').textContent = closed.length;
   document.getElementById('cnt-total').textContent  = open.length + closed.length;
@@ -746,137 +752,99 @@ function renderClosed(list) {
   panel.innerHTML = sorted.map(t => renderClosedCard(t)).join('');
 }
 
+function escapeHtml(v) {
+  return String(v == null ? '' : v).replace(/[&<>"']/g, ch =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function bidRows(r) {
+  if (Array.isArray(r.bid_items) && r.bid_items.length) return r.bid_items;
+  // Backwards compatibility with the old JSON format. A/B are valid only for
+  // a single-project tender; ambiguous multi-project data is not guessed.
+  return [];
+}
 function renderClosedCard(t) {
-  const resp     = t.respondents || [];
-  const isTwoEnv = !!t.two_envelope;
-  const hasPending = resp.some(r => r.price_pending);
-  const pricedResp = resp.filter(r => Number.isFinite(Number(r.opt_a)) && r.opt_a !== null);
-  const hasB = resp.some(r => r.opt_b !== undefined && r.opt_b !== null);
-  const validA = pricedResp;
-  const minA = validA.length ? Math.min(...validA.map(r => Number(r.opt_a))) : 0;
-  const maxA = validA.length ? Math.max(...validA.map(r => Number(r.opt_a))) : 0;
-  const expected = t.respondents_expected;
-  const incomplete = expected !== undefined && expected !== null &&
-    (resp.length !== Number(expected) || !t.respondents_complete);
-
-  const rows = resp.map((r, i) => {
-    const isPending = !!r.price_pending;
-    const notShortlisted = r.shortlisted === false;
-    const isWinner  = !!t.awarded_to && r.name === t.awarded_to;
-    const isLowest  = !isPending && r.opt_a != null && minA > 0 && Number(r.opt_a) === minA;
-    const abSum     = r.total_price != null ? Number(r.total_price) : (r.opt_a != null && r.opt_b != null ? Number(r.opt_a) + Number(r.opt_b) : null);
-    const pctAbove  = (minA && r.opt_a && !isLowest) ? ((r.opt_a - minA) / minA * 100) : 0;
-    const barW      = (maxA > minA && r.opt_a) ? Math.round((r.opt_a - minA) / (maxA - minA) * 100) : 0;
-    const vsLabel   = isPending ? '—' : isLowest ? 'lowest' : '+' + pctAbove.toFixed(1) + '%';
-
-    let barColor = '#d1d1d6';
-    if (isPending) barColor = '#e5e5ea';
-    else if (isLowest) barColor = 'var(--green)';
-    else if (pctAbove <= 5) barColor = '#aeaeb2';
-    else if (pctAbove <= 15) barColor = 'var(--accent)';
-    else barColor = 'var(--red)';
-
-    const priceDisplay = (r.opt_a == null)
-      ? '<span style="color:var(--muted2);font-size:11px;font-style:italic">Pending</span>'
-      : fmtp(r.opt_a) + '<span class="opt-tag opt-a">A</span>';
-    const optBCell = '<td class="price-cell">' + (r.opt_b != null ? fmtp(r.opt_b) + '<span class="opt-tag opt-b">B</span>' : '—') + '</td>';
-    const abCell = '<td class="price-cell price-sum">' + (abSum != null ? fmtp(abSum) : '—') + '</td>';
-
-    return '<tr' + (isPending ? ' style="opacity:0.6"' : '') + '>' +
-      '<td class="row-num">' + String(i+1).padStart(2,'0') + '</td>' +
-      '<td class="company-cell' + (isLowest ? ' is-lowest' : isWinner ? ' is-winner' : '') + '">' +
-        (isLowest ? '↓ ' : '') + (isWinner ? '✦ ' : '') + r.name +
-        (notShortlisted ? '<span class="badge" style="margin-left:6px;background:#f5f5f7;color:#86868b">NOT SHORTLISTED</span>' : '') +
-        (isWinner ? '<span class="award-tag">AWARDED</span>' : '') +
-      '</td>' +
-      '<td class="price-cell' + (isLowest ? ' is-lowest' : '') + '">' + priceDisplay + '</td>' +
-      optBCell + abCell +
-      '<td class="bar-cell"><div class="pbar-wrap">' +
-        '<div class="pbar"><div class="pbar-fill" style="width:' + barW + '%;background:' + barColor + '"></div></div>' +
-        '<span class="bar-pct">' + vsLabel + '</span>' +
-      '</div></td>' +
-    '</tr>';
-  }).join('');
-
-  const optBHeader = '<th>Option B</th><th style="color:var(--purple)">GeBIZ Total</th>'; 
-
-  const byPrice = [...pricedResp].sort((a,b)=>Number(a.opt_a)-Number(b.opt_a));
-  const lowestBid   = byPrice[0] || null;
-  const highestBid  = byPrice.length > 1 ? byPrice[byPrice.length - 1] : null;
-  const spreadPct   = (lowestBid && highestBid && lowestBid.opt_a)
-    ? ((highestBid.opt_a - lowestBid.opt_a) / lowestBid.opt_a * 100).toFixed(1) + '%'
-    : 'N/A';
-  const pendingNote = resp.some(r => r.price_pending && r.shortlisted !== false)
-    ? '<div style="font-size:11px;color:var(--muted);margin-top:4px">⏳ Prices not yet published for some respondents — will update automatically.</div>'
-    : '';
-  const isUnderEval = !(t.status === 'Awarded' || t.awarded_to);
-
-  const summaryLines = (t.status === 'Awarded' || t.awarded_to)
-    ? [(t.awarded_to ? '✦ Awarded to <strong>' + t.awarded_to + '</strong>' : '✦ Award confirmed — winning company pending'),
-       (t.awarded_value != null ? 'Award value: ' + fmtp(t.awarded_value) : ''),
-       (t.awarded_date ? 'Awarded date: ' + t.awarded_date : '')]
-    : isTwoEnv
-    ? (isUnderEval
-      ? [
-          '⏳ <strong>Under Evaluation</strong> — prices will be published after the award.',
-          'Closed ' + (t.close_date||'—') + ' &nbsp;·&nbsp; ' + resp.length + ' respondents (names only, prices pending)',
-        ]
-      : [
-          (t.awarded_to
-            ? '✦ Awarded to <strong style="color:var(--orange)">' + t.awarded_to + '</strong>'
-              + (t.awarded_value ? ' &nbsp;·&nbsp; <strong>' + fmtp(t.awarded_value) + '</strong>' : '')
-              + (t.awarded_date ? ' &nbsp;·&nbsp; ' + t.awarded_date : '')
-            : 'Awarded company not available — check GeBIZ Award tab'),
-          'Closed ' + (t.close_date||'—') + ' &nbsp;·&nbsp; ' + resp.length + ' shortlisted (prices shown for shortlisted only)',
-        ])
-    : [
-        lowestBid ? '↓ Lowest &nbsp;<strong style="color:var(--green)">' + lowestBid.name + '</strong>&nbsp; ' + fmtp(lowestBid.opt_a) + (lowestBid.opt_b ? ' / ' + fmtp(lowestBid.opt_b) : '') : '',
-        (highestBid && lowestBid && lowestBid.opt_a) ? '↑ Highest &nbsp;<strong style="color:var(--red)">' + highestBid.name + '</strong>&nbsp; ' + fmtp(highestBid.opt_a) + ' &nbsp;(+' + ((highestBid.opt_a - lowestBid.opt_a)/lowestBid.opt_a*100).toFixed(1) + '% above lowest)' : '',
-        pricedResp.length > 1 ? 'Price spread &nbsp;<strong>' + spreadPct + '</strong>' : '',
-      ];
-
-  const twoEnvBadge = isTwoEnv
-    ? (isUnderEval
-        ? '<span class="badge" style="margin-left:8px;vertical-align:middle;background:#f0f0ff;color:#5856d6;border:1px solid rgba(88,86,214,0.25)">TWO-ENVELOPE · UNDER EVALUATION</span>'
-        : '<span class="badge badge-awarded" style="margin-left:8px;vertical-align:middle">TWO-ENVELOPE · AWARDED</span>')
-    : '';
-
+  const respondents = Array.isArray(t.respondents) ? t.respondents : [];
   const awardItems = Array.isArray(t.awarded_items) ? t.awarded_items : [];
-  const awardsDetail = (t.status === 'Awarded' && awardItems.length)
-    ? '<div class="summary-box"><div class="summary-label">Awarded Items</div>' + awardItems.map(a =>
-      '<div>Item ' + a.item_no + (a.project ? ' · Project ' + a.project : '') +
-      (a.option ? ' · Option ' + a.option : '') + ' — <strong>' + fmtp(a.awarded_value) + '</strong></div>').join('') + '</div>' : '';
-  const table = resp.length
-    ? '<table class="resp-table">' +
-        '<thead><tr><th style="width:36px">#</th><th>Company</th><th>Option A</th>' + optBHeader + '<th>vs Lowest</th></tr></thead>' +
-        '<tbody>' + rows + '</tbody>' +
-      '</table>' +
-      '<div class="summary-box">' +
-        '<div class="summary-label">Summary</div>' +
-        (incomplete ? '<div style="color:#a45b00">⚠ Data incomplete: ' + resp.length + ' of ' + expected + ' respondents; retry scheduled.</div>' : '') +
-        summaryLines.filter(Boolean).map(l => '<div>' + l + '</div>').join('') +
-        pendingNote +
-      '</div>' + awardsDetail
-    : '<div class="empty">Respondent data not yet available.</div>';
-
-  return '<div class="panel">' +
-    '<div class="panel-hdr">' +
-      '<div style="flex:1;min-width:0">' +
-        '<div class="panel-title">' + hl(t.title) + twoEnvBadge +
-          (t.tender_type === 'lps' ? '<span class="badge badge-lps" style="margin-left:8px;vertical-align:middle">LPS</span>' : '') +
-        '</div>' +
-        '<div class="panel-meta">' +
-          (t.published ? '<span>Published ' + t.published + '</span><span style="color:var(--border2)">·</span>' : '') +
-          '<span>Closed ' + (t.close_date||'—') + '</span>' +
-          '<span style="color:var(--border2)">·</span>' +
-          '<span>' + resp.length + (expected != null ? ' / ' + expected : '') + ' respondents' + (incomplete ? ' ⚠' : '') + '</span>' +
-          (t.url ? '<span style="color:var(--border2)">·</span><a href="' + t.url + '" target="_blank">↗ GeBIZ</a>' : '') +
-        '</div>' +
-      '</div>' +
-      '<span class="badge ' + (t.status === 'Awarded' ? 'badge-awarded' : 'badge-closed') + '">' + (t.status === 'Awarded' ? 'AWARDED' : 'CLOSED') + '</span>' +
-    '</div>' +
-    table +
-  '</div>';
+  const isAwarded = t.status === 'Awarded' || !!t.award_confirmed;
+  const expected = t.respondents_expected;
+  const incomplete = expected != null && (respondents.length !== Number(expected) || !t.respondents_complete);
+  const projectNames = [...new Set((t.title || '').match(/\bPROJ(?:ECT)?\.?\s*[:#-]?\s*[A-Z]{1,5}\b/gi) || [])]
+    .map(x => (x.match(/\b([A-Z]{1,5})\s*$/i)||[])[1]).filter(Boolean).map(x=>x.toUpperCase());
+  const multiProject = new Set(projectNames).size > 1 || respondents.some(r=>
+    new Set(bidRows(r).map(b=>b.project).filter(Boolean)).size > 1);
+  const normalized = respondents.map(r => ({...r, bids:bidRows(r)}));
+  if (!multiProject) {
+    normalized.forEach(r => {
+      if (!r.bids.length) {
+        if (r.opt_a != null) r.bids.push({project:projectNames[0]||null,option:'A',price:r.opt_a});
+        if (r.opt_b != null) r.bids.push({project:projectNames[0]||null,option:'B',price:r.opt_b});
+      }
+    });
+  }
+  const groups = new Map();
+  normalized.forEach(r => r.bids.forEach(b => {
+    const project = (b.project || (multiProject ? 'UNKNOWN' : (projectNames[0] || 'PROJECT'))).toUpperCase();
+    if (!groups.has(project)) groups.set(project, new Set());
+    if (b.option) groups.get(project).add(String(b.option).replace(/\s/g,'').toUpperCase());
+  }));
+  // Still show all projects named by the tender, even if bids are pending.
+  projectNames.forEach(p => {if (!groups.has(p)) groups.set(p,new Set());});
+  const projects = [...groups.keys()].sort((a,b)=>projectNames.indexOf(a)-projectNames.indexOf(b));
+  const tableForProject = project => {
+    const optionCodes = [...(groups.get(project)||[])].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+    const options = optionCodes.length ? optionCodes : ['A','B'];
+    const minima = {};
+    options.forEach(o => {
+      const priced=normalized.flatMap(r => r.shortlisted === false ? [] : r.bids.filter(b =>
+        (b.project|| (multiProject ? 'UNKNOWN' : (projectNames[0]||'PROJECT'))).toUpperCase()===project &&
+        String(b.option).replace(/\s/g,'').toUpperCase()===o && Number.isFinite(Number(b.price))
+      ).map(b => ({name:r.name,price:Number(b.price)})));
+      minima[o]=priced.length ? Math.min(...priced.map(b=>b.price)) : null;
+    });
+    const rows=normalized.map((r,i) => {
+      const cells=options.map(o=>{
+        const match=r.bids.find(b=>(b.project||(multiProject?'UNKNOWN':(projectNames[0]||'PROJECT'))).toUpperCase()===project && String(b.option).replace(/\s/g,'').toUpperCase()===o);
+        const v=match && match.price != null ? Number(match.price) : null;
+        const lowest=v!==null && r.shortlisted!==false && v===minima[o];
+        return '<td class="price-cell'+(lowest?' is-lowest':'')+'">'+(v===null?'—':fmtp(v)+(lowest?' ↓ lowest':''))+'</td>';
+      }).join('');
+      return '<tr><td class="row-num">'+String(i+1).padStart(2,'0')+'</td>'+
+        '<td class="company-cell">'+escapeHtml(r.name)+(r.shortlisted===false?' <span class="badge">NOT SHORTLISTED</span>':'')+
+        (t.awarded_to && r.name===t.awarded_to?' <span class="award-tag">AWARDED</span>':'')+'</td>'+cells+'</tr>';
+    }).join('');
+    const lowSummary=options.map(o=>minima[o]===null?'Option '+o+': not available':'Lowest Option '+o+': '+fmtp(minima[o])).join(' · ');
+    return '<div class="divider">Project '+escapeHtml(project)+' — option prices (compared separately)</div>'+
+      '<div style="overflow-x:auto"><table class="resp-table"><thead><tr><th>#</th><th>Company</th>'+
+      options.map(o=>'<th>Option '+escapeHtml(o)+'</th>').join('')+'</tr></thead><tbody>'+rows+'</tbody></table></div>'+
+      '<div class="summary-box">'+escapeHtml(lowSummary)+'</div>';
+  };
+  const totalRows=respondents.map((r,i)=>'<tr><td class="row-num">'+String(i+1).padStart(2,'0')+'</td>'+
+    '<td class="company-cell">'+escapeHtml(r.name)+(r.shortlisted===false?' <span class="badge">NOT SHORTLISTED</span>':'')+'</td>'+
+    '<td class="price-cell">'+(r.total_price==null?'—':fmtp(r.total_price))+'</td></tr>').join('');
+  const note='<div class="summary-box"><div class="summary-label">Bid comparison</div>'+
+    'Options within one project are alternative proposals, not additive. Lowest bids are shown per option and project. '+
+    'The GeBIZ respondent total is displayed separately and is <strong>not</strong> treated as the eventual award price.'+
+    (multiProject?'<div>Multiple projects detected: no A/B mapping is inferred from legacy unstructured prices.</div>':'')+
+    (incomplete?'<div style="color:#a45b00">⚠ '+respondents.length+' / '+expected+' respondents captured — retry needed.</div>':'')+'</div>';
+  const awardsDetail=isAwarded?'<div class="summary-box"><div class="summary-label">Official Award</div>'+
+    '<div>Winner: <strong>'+escapeHtml(t.awarded_to||'Pending extraction')+'</strong></div>'+
+    '<div>Official awarded value: <strong>'+(t.awarded_value==null?'—':fmtp(t.awarded_value))+'</strong>'+
+    (t.awarded_date?' · '+escapeHtml(t.awarded_date):'')+'</div>'+
+    awardItems.map(a=>'<div>Item '+escapeHtml(a.item_no)+' · Project '+escapeHtml(a.project||'?')+
+      ' · Option '+escapeHtml(a.option||'?')+' → <strong>'+fmtp(a.awarded_value)+'</strong></div>').join('')+
+    '</div>':'';
+  const detail=projects.length?projects.map(tableForProject).join(''):
+    '<div class="empty">Item-level option prices not available yet. Re-run the scraper to collect them.</div>';
+  const header='<div class="panel-hdr"><div style="flex:1;min-width:0">'+
+    '<div class="panel-title">'+hl(escapeHtml(t.title||''))+'</div><div class="panel-meta">'+
+    escapeHtml(t.doc_no||'')+' · '+escapeHtml(t.close_date||'')+' · '+respondents.length+
+    (expected!=null?' / '+expected:'')+' respondents'+
+    (t.url?' · <a href="'+escapeHtml(t.url)+'" target="_blank" rel="noopener noreferrer">↗ GeBIZ</a>':'')+
+    '</div></div><span class="badge '+(isAwarded?'badge-awarded':'badge-closed')+'">'+(isAwarded?'AWARDED':'CLOSED')+'</span></div>';
+  return '<div class="panel">'+header+note+detail+
+    '<div class="divider">GeBIZ published respondent totals (reference only)</div>'+
+    '<div style="overflow-x:auto"><table class="resp-table"><thead><tr><th>#</th><th>Company</th><th>GeBIZ displayed total</th></tr></thead><tbody>'+totalRows+'</tbody></table></div>'+
+    awardsDetail+'</div>';
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
