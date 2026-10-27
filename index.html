@@ -757,94 +757,90 @@ function escapeHtml(v) {
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
 function bidRows(r) {
-  if (Array.isArray(r.bid_items) && r.bid_items.length) return r.bid_items;
-  // Backwards compatibility with the old JSON format. A/B are valid only for
-  // a single-project tender; ambiguous multi-project data is not guessed.
-  return [];
+  return Array.isArray(r.bid_items) ? r.bid_items.filter(b => b && b.price != null) : [];
+}
+function projectCodes(title) {
+  const matches = [...String(title||'').matchAll(/\bPROJ(?:ECT)?\.?\s*[:#-]?\s*([A-Z]{1,5}(?:[-/][A-Z]{1,5})?)\b/gi)];
+  return [...new Set(matches.flatMap(m => {
+    // Hyphenated code like CM-CN can be a single project designation.
+    return [m[1].toUpperCase()];
+  }))];
 }
 function renderClosedCard(t) {
   const respondents = Array.isArray(t.respondents) ? t.respondents : [];
-  const awardItems = Array.isArray(t.awarded_items) ? t.awarded_items : [];
-  const isAwarded = t.status === 'Awarded' || !!t.award_confirmed;
-  const expected = t.respondents_expected;
-  const incomplete = expected != null && (respondents.length !== Number(expected) || !t.respondents_complete);
-  const projectNames = [...new Set((t.title || '').match(/\bPROJ(?:ECT)?\.?\s*[:#-]?\s*[A-Z]{1,5}\b/gi) || [])]
-    .map(x => (x.match(/\b([A-Z]{1,5})\s*$/i)||[])[1]).filter(Boolean).map(x=>x.toUpperCase());
-  const multiProject = new Set(projectNames).size > 1 || respondents.some(r=>
-    new Set(bidRows(r).map(b=>b.project).filter(Boolean)).size > 1);
+  const awards = Array.isArray(t.awarded_items) ? t.awarded_items : [];
+  const awarded = t.status === 'Awarded' || !!t.award_confirmed;
+  const projects = projectCodes(t.title);
+  const explicit = new Map();
   const normalized = respondents.map(r => ({...r, bids:bidRows(r)}));
-  if (!multiProject) {
-    normalized.forEach(r => {
-      if (!r.bids.length) {
-        if (r.opt_a != null) r.bids.push({project:projectNames[0]||null,option:'A',price:r.opt_a});
-        if (r.opt_b != null) r.bids.push({project:projectNames[0]||null,option:'B',price:r.opt_b});
+  // An option must be linked to the project mentioned inside that Item.
+  // Legacy A/B belongs to a single project only, never inferred for multiple projects.
+  normalized.forEach(r => {
+    if (!r.bids.length && projects.length===1) {
+      for (const option of ['A','B']) {
+        const price=r['opt_'+option.toLowerCase()];
+        if (price != null) r.bids.push({project:projects[0],option,price});
       }
+    }
+    r.bids.forEach(b => {
+      const p=String(b.project || (projects.length===1?projects[0]:'' )).toUpperCase();
+      const o=String(b.option||'').replace(/\s/g,'').toUpperCase();
+      if (!p || !o || !Number.isFinite(Number(b.price))) return;
+      if (!explicit.has(p)) explicit.set(p,new Set());
+      explicit.get(p).add(o);
     });
+  });
+  const columns=[];
+  const order=[...new Set([...projects,...explicit.keys()])];
+  for(const p of order) for(const o of [...(explicit.get(p)||[])].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}))) columns.push({p,o});
+  const minima={};
+  for(const {p,o} of columns) {
+    const prices=normalized.filter(r=>r.shortlisted!==false).flatMap(r=>r.bids.filter(b =>
+      String(b.project||(projects.length===1?projects[0]:'')).toUpperCase()===p &&
+      String(b.option||'').replace(/\s/g,'').toUpperCase()===o).map(b=>Number(b.price)));
+    minima[p+'|'+o]=prices.length?Math.min(...prices):null;
   }
-  const groups = new Map();
-  normalized.forEach(r => r.bids.forEach(b => {
-    const project = (b.project || (multiProject ? 'UNKNOWN' : (projectNames[0] || 'PROJECT'))).toUpperCase();
-    if (!groups.has(project)) groups.set(project, new Set());
-    if (b.option) groups.get(project).add(String(b.option).replace(/\s/g,'').toUpperCase());
-  }));
-  // Still show all projects named by the tender, even if bids are pending.
-  projectNames.forEach(p => {if (!groups.has(p)) groups.set(p,new Set());});
-  const projects = [...groups.keys()].sort((a,b)=>projectNames.indexOf(a)-projectNames.indexOf(b));
-  const tableForProject = project => {
-    const optionCodes = [...(groups.get(project)||[])].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
-    const options = optionCodes.length ? optionCodes : ['A','B'];
-    const minima = {};
-    options.forEach(o => {
-      const priced=normalized.flatMap(r => r.shortlisted === false ? [] : r.bids.filter(b =>
-        (b.project|| (multiProject ? 'UNKNOWN' : (projectNames[0]||'PROJECT'))).toUpperCase()===project &&
-        String(b.option).replace(/\s/g,'').toUpperCase()===o && Number.isFinite(Number(b.price))
-      ).map(b => ({name:r.name,price:Number(b.price)})));
-      minima[o]=priced.length ? Math.min(...priced.map(b=>b.price)) : null;
-    });
-    const rows=normalized.map((r,i) => {
-      const cells=options.map(o=>{
-        const match=r.bids.find(b=>(b.project||(multiProject?'UNKNOWN':(projectNames[0]||'PROJECT'))).toUpperCase()===project && String(b.option).replace(/\s/g,'').toUpperCase()===o);
-        const v=match && match.price != null ? Number(match.price) : null;
-        const lowest=v!==null && r.shortlisted!==false && v===minima[o];
-        return '<td class="price-cell'+(lowest?' is-lowest':'')+'">'+(v===null?'—':fmtp(v)+(lowest?' ↓ lowest':''))+'</td>';
-      }).join('');
-      return '<tr><td class="row-num">'+String(i+1).padStart(2,'0')+'</td>'+
-        '<td class="company-cell">'+escapeHtml(r.name)+(r.shortlisted===false?' <span class="badge">NOT SHORTLISTED</span>':'')+
-        (t.awarded_to && r.name===t.awarded_to?' <span class="award-tag">AWARDED</span>':'')+'</td>'+cells+'</tr>';
-    }).join('');
-    const lowSummary=options.map(o=>minima[o]===null?'Option '+o+': not available':'Lowest Option '+o+': '+fmtp(minima[o])).join(' · ');
-    return '<div class="divider">Project '+escapeHtml(project)+' — option prices (compared separately)</div>'+
-      '<div style="overflow-x:auto"><table class="resp-table"><thead><tr><th>#</th><th>Company</th>'+
-      options.map(o=>'<th>Option '+escapeHtml(o)+'</th>').join('')+'</tr></thead><tbody>'+rows+'</tbody></table></div>'+
-      '<div class="summary-box">'+escapeHtml(lowSummary)+'</div>';
-  };
-  const totalRows=respondents.map((r,i)=>'<tr><td class="row-num">'+String(i+1).padStart(2,'0')+'</td>'+
-    '<td class="company-cell">'+escapeHtml(r.name)+(r.shortlisted===false?' <span class="badge">NOT SHORTLISTED</span>':'')+'</td>'+
-    '<td class="price-cell">'+(r.total_price==null?'—':fmtp(r.total_price))+'</td></tr>').join('');
-  const note='<div class="summary-box"><div class="summary-label">Bid comparison</div>'+
-    'Options within one project are alternative proposals, not additive. Lowest bids are shown per option and project. '+
-    'The GeBIZ respondent total is displayed separately and is <strong>not</strong> treated as the eventual award price.'+
-    (multiProject?'<div>Multiple projects detected: no A/B mapping is inferred from legacy unstructured prices.</div>':'')+
-    (incomplete?'<div style="color:#a45b00">⚠ '+respondents.length+' / '+expected+' respondents captured — retry needed.</div>':'')+'</div>';
-  const awardsDetail=isAwarded?'<div class="summary-box"><div class="summary-label">Official Award</div>'+
-    '<div>Winner: <strong>'+escapeHtml(t.awarded_to||'Pending extraction')+'</strong></div>'+
-    '<div>Official awarded value: <strong>'+(t.awarded_value==null?'—':fmtp(t.awarded_value))+'</strong>'+
-    (t.awarded_date?' · '+escapeHtml(t.awarded_date):'')+'</div>'+
-    awardItems.map(a=>'<div>Item '+escapeHtml(a.item_no)+' · Project '+escapeHtml(a.project||'?')+
-      ' · Option '+escapeHtml(a.option||'?')+' → <strong>'+fmtp(a.awarded_value)+'</strong></div>').join('')+
-    '</div>':'';
-  const detail=projects.length?projects.map(tableForProject).join(''):
-    '<div class="empty">Item-level option prices not available yet. Re-run the scraper to collect them.</div>';
+  const expected=t.respondents_expected;
+  const incomplete=expected != null && respondents.length < Number(expected);
+  const note=incomplete?'<div class="summary-box" style="color:#a45b00">⚠ '+respondents.length+' / '+Number(expected)+' respondents captured — retry needed.</div>':'';
   const header='<div class="panel-hdr"><div style="flex:1;min-width:0">'+
     '<div class="panel-title">'+hl(escapeHtml(t.title||''))+'</div><div class="panel-meta">'+
     escapeHtml(t.doc_no||'')+' · '+escapeHtml(t.close_date||'')+' · '+respondents.length+
     (expected!=null?' / '+expected:'')+' respondents'+
     (t.url?' · <a href="'+escapeHtml(t.url)+'" target="_blank" rel="noopener noreferrer">↗ GeBIZ</a>':'')+
-    '</div></div><span class="badge '+(isAwarded?'badge-awarded':'badge-closed')+'">'+(isAwarded?'AWARDED':'CLOSED')+'</span></div>';
-  return '<div class="panel">'+header+note+detail+
-    '<div class="divider">GeBIZ published respondent totals (reference only)</div>'+
-    '<div style="overflow-x:auto"><table class="resp-table"><thead><tr><th>#</th><th>Company</th><th>GeBIZ displayed total</th></tr></thead><tbody>'+totalRows+'</tbody></table></div>'+
-    awardsDetail+'</div>';
+    '</div></div><span class="badge '+(awarded?'badge-awarded':'badge-closed')+'">'+(awarded?'AWARDED':'CLOSED')+'</span></div>';
+  // Every respondent appears ONCE. Keep original GeBIZ reported total visible,
+  // even while option-level detail is awaiting a re-scrape.
+  const columnHeaders=columns.map(c=>'<th>'+escapeHtml(c.p)+' · '+escapeHtml(c.o)+'</th>').join('');
+  const rows=normalized.map((r,i)=>{
+    const cells=columns.map(c=>{
+      const b=r.bids.find(v=>String(v.project||(projects.length===1?projects[0]:'')).toUpperCase()===c.p &&
+         String(v.option||'').replace(/\s/g,'').toUpperCase()===c.o);
+      const price=b?Number(b.price):null;
+      const low=price!==null && price===minima[c.p+'|'+c.o] && r.shortlisted!==false;
+      return '<td class="price-cell'+(low?' is-lowest':'')+'">'+(price===null?'—':fmtp(price)+(low?' ↓ lowest':''))+'</td>';
+    }).join('');
+    const tags=(r.shortlisted===false?' <span class="badge">NOT SHORTLISTED</span>':'')+
+      (t.awarded_to && String(r.name||'').toUpperCase()===String(t.awarded_to).toUpperCase()?' <span class="award-tag">AWARDED</span>':'');
+    return '<tr><td class="row-num">'+String(i+1).padStart(2,'0')+'</td><td class="company-cell">'+escapeHtml(r.name)+tags+'</td>'+cells+
+      '<td class="price-cell">'+(r.total_price == null?'—':fmtp(r.total_price))+'</td></tr>';
+  }).join('');
+  const detail=respondents.length?
+    '<div style="overflow-x:auto"><table class="resp-table"><thead><tr><th>#</th><th>Company</th>'+columnHeaders+
+    '<th>GeBIZ published total*</th></tr></thead><tbody>'+rows+'</tbody></table></div>':
+    '<div class="empty">Respondent data not yet available.</div>';
+  const lowest=columns.length?'<div class="summary-box"><div class="summary-label">Lowest quoted price by project and option</div>'+
+    columns.map(c=>'<div>'+escapeHtml(c.p)+' · Option '+escapeHtml(c.o)+': '+fmtp(minima[c.p+'|'+c.o])+'</div>').join('')+'</div>':'';
+  const legacyWarn=columns.length===0 && respondents.some(r=>r.total_price!=null)?
+    '<div class="summary-box">Item-by-item prices have not been verified. Showing all available published respondent totals without guessing project or option allocation.</div>':'';
+  const summary='<div class="summary-box"><small>*GeBIZ published total is the sum shown on the Respondents page, not a comparable single project bid or final awarded price. Each project receives one selected awarded option; alternative options must not be added together.</small></div>';
+  const awardDetail=awarded?'<div class="summary-box"><div class="summary-label">Official Award</div>'+
+    '<div>Winner: <strong>'+escapeHtml(t.awarded_to||'Pending extraction')+'</strong></div>'+
+    '<div>Official awarded value: <strong>'+(t.awarded_value==null?'—':fmtp(t.awarded_value))+'</strong>'+
+      (t.awarded_date?' · '+escapeHtml(t.awarded_date):'')+'</div>'+
+    awards.map(a=>'<div>Item '+escapeHtml(a.item_no)+' · Project '+escapeHtml(a.project||'?')+
+      ' · Option '+escapeHtml(a.option||'?')+' → <strong>'+fmtp(a.awarded_value)+'</strong></div>').join('')+'</div>':'';
+  return '<div class="panel">'+header+note+detail+lowest+legacyWarn+summary+awardDetail+'</div>';
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
