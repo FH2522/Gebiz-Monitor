@@ -11,7 +11,11 @@
       "tender_type": "building_works",
       "added": "26 Oct 2026, 15:07",
       "project_code": "ECT",
-      "du_count": 834
+      "du_count": 834,
+      "project_codes": [
+        "ECT",
+        "EH"
+      ]
     },
     {
       "title": "PART A: BUILDING WORKS AT PROJECT EG AND PARK (TOTAL: 2,234 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
@@ -24,7 +28,10 @@
       "tender_type": "building_works",
       "added": "26 Oct 2026, 15:07",
       "project_code": "EG",
-      "du_count": 2234
+      "du_count": 2234,
+      "project_codes": [
+        "EG"
+      ]
     },
     {
       "title": "PART A: BUILDING WORKS AT PROJECT FJ (TOTAL: 812 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
@@ -37,7 +44,10 @@
       "tender_type": "building_works",
       "added": "26 Oct 2026, 15:08",
       "project_code": "FJ",
-      "du_count": 812
+      "du_count": 812,
+      "project_codes": [
+        "FJ"
+      ]
     },
     {
       "title": "PART A: BUILDING WORKS AT PROJECT EN (TOTAL: 460 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
@@ -50,7 +60,10 @@
       "tender_type": "building_works",
       "added": "26 Oct 2026, 15:08",
       "project_code": "EN",
-      "du_count": 460
+      "du_count": 460,
+      "project_codes": [
+        "EN"
+      ]
     },
     {
       "title": "PART A: BUILDING WORKS AT PROJECT GB (TOTAL: 1,928 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
@@ -63,7 +76,10 @@
       "tender_type": "building_works",
       "added": "26 Oct 2026, 15:08",
       "project_code": "GB",
-      "du_count": 1928
+      "du_count": 1928,
+      "project_codes": [
+        "GB"
+      ]
     }
   ],
   "closed": [
@@ -81,7 +97,12 @@
       "requires_option_b": true,
       "hdb_verified": true,
       "project_code": "ECT",
-      "du_count": 834
+      "du_count": 834,
+      "under_evaluation": true,
+      "project_codes": [
+        "ECT",
+        "EH"
+      ]
     },
     {
       "title": "PART A: BUILDING WORKS AT PROJECT GY (TOTAL: 711 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
@@ -278,13 +299,16 @@
       ],
       "added": "26 Oct 2026, 15:08",
       "respondents_expected": 26,
-      "respondents_complete": true,
+      "respondents_complete": false,
       "requires_option_b": true,
       "hdb_verified": true,
       "two_envelope": false,
       "under_evaluation": true,
       "project_code": "GY",
-      "du_count": 711
+      "du_count": 711,
+      "project_codes": [
+        "GY"
+      ]
     },
     {
       "title": "PART A: BUILDING WORKS AT PROJECT CM-CN (TOTAL: 1,890 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
@@ -438,7 +462,10 @@
       "two_envelope": false,
       "under_evaluation": true,
       "project_code": "CM-CN",
-      "du_count": 1890
+      "du_count": 1890,
+      "project_codes": [
+        "CM-CN"
+      ]
     },
     {
       "title": "PART A: BUILDING WORKS AT PROJECT DU (TOTAL: 1,695 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
@@ -586,13 +613,16 @@
       ],
       "added": "26 Oct 2026, 15:09",
       "respondents_expected": 19,
-      "respondents_complete": true,
+      "respondents_complete": false,
       "requires_option_b": true,
       "hdb_verified": true,
       "two_envelope": false,
       "under_evaluation": true,
       "project_code": "DU",
-      "du_count": 1695
+      "du_count": 1695,
+      "project_codes": [
+        "DU"
+      ]
     },
     {
       "title": "PART A : BUILDING WORKS AT PROJECT BV (TOTAL: 438 DWELLING UNITS ); PART B : CONTINGENCY WORKS",
@@ -726,13 +756,16 @@
       ],
       "added": "26 Oct 2026, 15:09",
       "respondents_expected": 17,
-      "respondents_complete": true,
+      "respondents_complete": false,
       "requires_option_b": true,
       "hdb_verified": true,
       "two_envelope": false,
       "under_evaluation": true,
       "project_code": "BV",
-      "du_count": 438
+      "du_count": 438,
+      "project_codes": [
+        "BV"
+      ]
     },
     {
       "title": "PROJ 1 PT A: BLDG WORKS AT PROJ DS (TOTAL: 235 DUS ) PT B: CONTINGENCY WORKS PROJ 2 PT A: BLDG WORKS AT PROJ DP (TOTAL: 1271 DUS ) PT B:CONTINGENY WORKS",
@@ -748,93 +781,141 @@
       "project_code": "DS",
       "du_count": 235,
       "requires_option_b": false,
-      "hdb_verified": true
+      "hdb_verified": true,
+      "project_codes": [
+        "DS",
+        "DP"
+      ]
     },
     {
       "title": "PROJ1: PT A:BLDG WORKS AT PROJECT DD(TOTAL:1,206 DUS ) PT B:CONTINGENCY WORKS PROJ2: PT A:BLDG WORKS AT PROJECT DO(TOTAL:366 DUS )PT B:CONTINGENCY WORKS",
       "doc_no": "HDB000ETT26000066",
       "close_date": "30 Jul 2026 04:00PM",
       "published": "22 Apr 2026 03:05PM",
-      "status": "Closed",
+      "status": "Awarded",
       "agency": "Housing and Development Board",
       "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000066",
       "tender_type": "building_works",
       "hdb_verified": true,
       "requires_option_b": false,
       "respondents_expected": 10,
-      "respondents_complete": false,
+      "respondents_complete": true,
       "two_envelope": false,
       "awarded_value": 378000000.0,
       "awarded_date": "05 Oct 2026",
-      "under_evaluation": true,
+      "under_evaluation": false,
       "respondents": [
         {
           "name": "CHIU TENG CONSTRUCTION CO. PTE. LTD.",
-          "opt_a": null,
-          "opt_b": null,
+          "shortlisted": true,
+          "opt_a": 94200000.0,
+          "opt_b": 94700000.0,
           "total_price": 1276900000.0,
-          "price_pending": true
+          "price_pending": false
         },
         {
           "name": "LIM WEN HENG CONSTRUCTION PTE LTD",
-          "opt_a": null,
-          "opt_b": null,
+          "shortlisted": true,
+          "opt_a": 91500000.0,
+          "opt_b": 92000000.0,
           "total_price": 1315500000.0,
-          "price_pending": true
+          "price_pending": false
         },
         {
           "name": "CHIP ENG SENG CONTRACTORS (1988) PTE LTD",
-          "opt_a": null,
-          "opt_b": null,
+          "shortlisted": true,
+          "opt_a": 94720000.0,
+          "opt_b": 95400000.0,
           "total_price": 1318326000.0,
-          "price_pending": true
+          "price_pending": false
         },
         {
           "name": "VICO CONSTRUCTION PTE. LTD.",
-          "opt_a": null,
-          "opt_b": null,
+          "shortlisted": true,
+          "opt_a": 93007000.0,
+          "opt_b": 93907000.0,
           "total_price": 1318944000.0,
-          "price_pending": true
+          "price_pending": false
         },
         {
           "name": "CHINA CONSTRUCTION (SOUTH PACIFIC) DEVELOPMENT CO. PTE. LTD.",
-          "opt_a": null,
-          "opt_b": null,
+          "shortlisted": true,
+          "opt_a": 91700000.0,
+          "opt_b": 92200000.0,
           "total_price": 1323100000.0,
-          "price_pending": true
+          "price_pending": false
         },
         {
           "name": "WELLTECH CONSTRUCTION PTE LTD",
-          "opt_a": null,
-          "opt_b": null,
+          "shortlisted": true,
+          "opt_a": 98000000.0,
+          "opt_b": 99000000.0,
           "total_price": 1333400000.0,
-          "price_pending": true
+          "price_pending": false
         },
         {
           "name": "BHCC CONSTRUCTION PTE. LTD.",
-          "opt_a": null,
-          "opt_b": null,
+          "shortlisted": true,
+          "opt_a": 100000000.0,
+          "opt_b": 100300000.0,
           "total_price": 1357052000.0,
-          "price_pending": true
+          "price_pending": false
         },
         {
           "name": "TEAMBUILD ENGINEERING & CONSTRUCTION PTE. LTD.",
+          "shortlisted": true,
+          "opt_a": 113608000.0,
+          "opt_b": 114518000.0,
+          "total_price": 1366258000.0,
+          "price_pending": false
+        },
+        {
+          "name": "KAH ENGINEERING (1986) PTE. LTD.",
+          "shortlisted": false,
           "opt_a": null,
           "opt_b": null,
-          "total_price": 1366258000.0,
+          "total_price": null,
+          "price_pending": true
+        },
+        {
+          "name": "RIGHT CONSTRUCTION PTE LTD",
+          "shortlisted": false,
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": null,
           "price_pending": true
         }
       ],
       "added": "26 Oct 2026, 15:58",
       "project_code": "DD",
-      "du_count": 1206
+      "du_count": 1206,
+      "awarded_to": "LIM WEN HENG CONSTRUCTION PTE LTD",
+      "awarded_items": [
+        {
+          "item_no": 4,
+          "option": "2B",
+          "project": "DD",
+          "awarded_value": 286000000.0
+        },
+        {
+          "item_no": 6,
+          "option": "1B",
+          "project": "DO",
+          "awarded_value": 92000000.0
+        }
+      ],
+      "award_confirmed": true,
+      "project_codes": [
+        "DD",
+        "DO"
+      ]
     },
     {
       "title": "PROJ 1: PT A: BLDG WORKS AT PROJ EL (TOTAL: 917 DUS ) PT B: CONTINGENCY WORKS PROJ 2 PT A: BLDG WORKS AT PROJ DT (TOTAL:193 DUS ) PT B:CONTINGENCY WORKS",
       "doc_no": "HDB000ETT26000050",
       "close_date": "12 Jun 2026 04:00PM",
       "published": "27 Mar 2026 03:05PM",
-      "status": "Closed",
+      "status": "Awarded",
       "agency": "Housing and Development Board",
       "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000050",
       "tender_type": "building_works",
@@ -845,7 +926,7 @@
       "two_envelope": false,
       "awarded_value": 255629000.0,
       "awarded_date": "31 Aug 2026",
-      "under_evaluation": true,
+      "under_evaluation": false,
       "respondents": [
         {
           "name": "SH DESIGN & BUILD PTE. LTD.",
@@ -983,9 +1064,29 @@
       ],
       "added": "26 Oct 2026, 15:59",
       "project_code": "EL",
-      "du_count": 917
+      "du_count": 917,
+      "awarded_to": "SH DESIGN & BUILD PTE. LTD.",
+      "awarded_items": [
+        {
+          "item_no": 2,
+          "option": "B",
+          "project": "EL",
+          "awarded_value": 192280000.0
+        },
+        {
+          "item_no": 4,
+          "option": "B",
+          "project": "DT",
+          "awarded_value": 63349000.0
+        }
+      ],
+      "award_confirmed": true,
+      "project_codes": [
+        "EL",
+        "DT"
+      ]
     }
   ],
-  "last_updated": "27 Oct 2026, 08:02:21",
-  "run_count": 5
+  "last_updated": "27 Oct 2026, 11:08:05",
+  "run_count": 6
 }
