@@ -760,10 +760,10 @@ function bidRows(r) {
   return Array.isArray(r.bid_items) ? r.bid_items.filter(b => b && b.price != null) : [];
 }
 function projectCodes(title) {
-  const matches = [...String(title||'').matchAll(/\bPROJ(?:ECT)?\.?\s*[:#-]?\s*([A-Z]{1,5}(?:[-/][A-Z]{1,5})?)\b/gi)];
+  const matches = [...String(title||'').matchAll(/\bPROJ(?:ECT)?\.?\s*[:#-]?\s*([A-Z]{1,5}(?:\s*[-/]\s*[A-Z]{1,5})?)\b/gi)];
   return [...new Set(matches.flatMap(m => {
     // Hyphenated code like CM-CN can be a single project designation.
-    return [m[1].toUpperCase()];
+    return [m[1].toUpperCase().replace(/\s*([-\/])\s*/g,'$1')];
   }))];
 }
 function renderClosedCard(t) {
@@ -829,18 +829,46 @@ function renderClosedCard(t) {
     '<div style="overflow-x:auto"><table class="resp-table"><thead><tr><th>#</th><th>Company</th>'+columnHeaders+
     '<th>GeBIZ published total*</th></tr></thead><tbody>'+rows+'</tbody></table></div>':
     '<div class="empty">Respondent data not yet available.</div>';
-  const lowest=columns.length?'<div class="summary-box"><div class="summary-label">Lowest quoted price by project and option</div>'+
-    columns.map(c=>'<div>'+escapeHtml(c.p)+' · Option '+escapeHtml(c.o)+': '+fmtp(minima[c.p+'|'+c.o])+'</div>').join('')+'</div>':'';
+  // Prices from separate OPTION columns are alternatives, never additive.
+  // Find the lowest *actual quoted* price in each option, then the cheapest
+  // published option within each project. Different project minima may belong
+  // to different contractors, so the sum is an indicative comparison only.
+  const projectBest = order.map(p => {
+    const available = columns.filter(c=>c.p===p).map(c => ({
+      option:c.o, price:minima[c.p+'|'+c.o]
+    })).filter(v=>v.price != null && Number.isFinite(v.price));
+    available.sort((a,b)=>a.price-b.price);
+    return {project:p, options:available, best:available[0]||null};
+  });
+  const lowest=columns.length?'<div class="summary-box"><div class="summary-label">Lowest bid in each project / option</div>'+ 
+    projectBest.map(p=>'<div style="margin-top:8px"><strong>Project '+escapeHtml(p.project)+'</strong> · '+
+      (p.options.length ? p.options.map(o=>'Option '+escapeHtml(o.option)+': '+fmtp(o.price)).join(' &nbsp;·&nbsp; ') : 'Item prices pending')+
+      (p.best ? '<div style="color:var(--green)">↓ Lowest published option for '+escapeHtml(p.project)+': '+
+               escapeHtml(p.best.option)+' · '+fmtp(p.best.price)+'</div>' : '')+'</div>').join('')+'</div>':'';
+  const allProjectMinimaAvailable=projectBest.length>1 && projectBest.every(p=>p.best);
+  const indicativeSum=allProjectMinimaAvailable?
+    projectBest.reduce((sum,p)=>sum+p.best.price,0):null;
+  const combinedLowest=indicativeSum!==null?
+    '<div class="summary-box"><strong>Indicative lowest project-wise combination: '+fmtp(indicativeSum)+'</strong>'+ 
+    '<div style="color:var(--muted)">Sum of the cheapest quoted option for each project. It may combine different suppliers and is NOT necessarily the official awarded value.</div></div>':'';
   const legacyWarn=columns.length===0 && respondents.some(r=>r.total_price!=null)?
-    '<div class="summary-box">Item-by-item prices have not been verified. Showing all available published respondent totals without guessing project or option allocation.</div>':'';
-  const summary='<div class="summary-box"><small>*GeBIZ published total is the sum shown on the Respondents page, not a comparable single project bid or final awarded price. Each project receives one selected awarded option; alternative options must not be added together.</small></div>';
-  const awardDetail=awarded?'<div class="summary-box"><div class="summary-label">Official Award</div>'+
-    '<div>Winner: <strong>'+escapeHtml(t.awarded_to||'Pending extraction')+'</strong></div>'+
-    '<div>Official awarded value: <strong>'+(t.awarded_value==null?'—':fmtp(t.awarded_value))+'</strong>'+
-      (t.awarded_date?' · '+escapeHtml(t.awarded_date):'')+'</div>'+
-    awards.map(a=>'<div>Item '+escapeHtml(a.item_no)+' · Project '+escapeHtml(a.project||'?')+
-      ' · Option '+escapeHtml(a.option||'?')+' → <strong>'+fmtp(a.awarded_value)+'</strong></div>').join('')+'</div>':'';
-  return '<div class="panel">'+header+note+detail+lowest+legacyWarn+summary+awardDetail+'</div>';
+    '<div class="summary-box">Individual Item prices are not yet available. The figures below are GeBIZ totals across alternative Items; no options have been inferred or divided.</div>':'';
+  const summary='<div class="summary-box"><small>*GeBIZ published total on the Respondents page is NOT the price of a selected option. Alternative options in the same project must not be added together.</small></div>';
+  const awardSum=awards.length && awards.every(a=>a.awarded_value!=null && Number.isFinite(Number(a.awarded_value))) ?
+    awards.reduce((sum,a)=>sum+Number(a.awarded_value),0):null;
+  const awardMatches=awardSum!==null && t.awarded_value!=null &&
+    Math.abs(awardSum-Number(t.awarded_value))<0.01;
+  const awardDetail=awarded?'<div class="summary-box"><div class="summary-label">Official Award · selected project option only</div>'+ 
+    '<div>Winner: <strong>'+escapeHtml(t.awarded_to||'Pending extraction')+'</strong></div>'+ 
+    (awards.length?'<div style="overflow-x:auto"><table class="resp-table" style="margin:10px 0"><thead><tr><th>Project</th><th>Item</th><th>Selected option</th><th>Awarded price</th></tr></thead><tbody>'+ 
+      awards.map(a=>'<tr><td>'+escapeHtml(a.project||'?')+'</td><td>'+escapeHtml(a.item_no||'')+'</td><td>'+escapeHtml(a.option||'?')+'</td><td class="price-cell">'+fmtp(a.awarded_value)+'</td></tr>').join('')+
+      '</tbody></table></div>':'<div>Selected Item details are awaiting extraction.</div>')+
+    '<div><strong>Official total awarded value: '+(t.awarded_value==null?'—':fmtp(t.awarded_value))+'</strong>'+ 
+      (t.awarded_date?' · '+escapeHtml(t.awarded_date):'')+'</div>'+ 
+    (awardSum!==null ? '<div>Sum of selected awarded Items: '+fmtp(awardSum)+ 
+      (awardMatches?' · verified against official total':' · check against official total')+'</div>' : '')+
+    '</div>':'';
+  return '<div class="panel">'+header+note+detail+lowest+combinedLowest+legacyWarn+summary+awardDetail+'</div>';
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
