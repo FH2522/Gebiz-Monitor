@@ -636,18 +636,84 @@ class GeBIZScraper:
                     return []
                 log.info("  Project %s confirmed in respondents page", proj_code)
 
-            # Expand respondent accordion entries so item-level details are present.
-            try:
-                expand = self.page.get_by_text('Expand All', exact=True)
-                if expand.count() and expand.first.is_visible():
-                    expand.first.click(timeout=6000)
-                    self.page.wait_for_timeout(1200)
-                    html2 = self.page.content()
-                    text2 = clean(html2)
-            except Exception as exc:
-                log.info('  Expand All not available: %s', exc)
+            # GeBIZ may show *separate* Expand All controls for shortlisted and
+            # not-shortlisted suppliers.  Clicking only the first loses bid items.
+            # Re-select the first remaining Expand All each time (DOM can change).
+            expanded_groups = 0
+            for _ in range(8):
+                try:
+                    expand = self.page.get_by_text('Expand All', exact=True)
+                    n = expand.count()
+                    if n == 0: break
+                    clickable = next((expand.nth(i) for i in range(n)
+                                      if expand.nth(i).is_visible()), None)
+                    if clickable is None: break
+                    before = self.page.content()
+                    clickable.click(timeout=5000)
+                    self.page.wait_for_timeout(700)
+                    after = self.page.content()
+                    if before == after:
+                        log.warning('  Expand All did not change the DOM for %s', tender['doc_no'])
+                        break
+                    expanded_groups += 1
+                except Exception as exc:
+                    log.info('  Expand All stopped: %s', exc)
+                    break
+            html2 = self.page.content()
+            text2 = clean(html2)
+            respondents = self._parse_respondents(html2, text2, tender['doc_no'])
 
-            respondents = self._parse_respondents(html2, text2, tender["doc_no"])
+            # Fallback: some GeBIZ templates only expand a supplier by clicking
+            # its name.  Only click missing bidder details; if it collapses an
+            # existing block, click again to restore the original DOM.
+            missing = [r['name'] for r in respondents
+                       if r.get('shortlisted') is not False and not r.get('bid_items')]
+            clicked_suppliers = 0
+            for name in missing[:60]:
+                try:
+                    loc = self.page.get_by_text(name, exact=True)
+                    if not loc.count(): continue
+                    target = loc.first
+                    if not target.is_visible(): continue
+                    before_html = self.page.content()
+                    before_count = len(re.findall(r'\bItem\s+No\.?\s*\d+\b',
+                                                   clean(before_html), re.I))
+                    target.click(timeout=3500)
+                    self.page.wait_for_timeout(350)
+                    after_html = self.page.content()
+                    after_count = len(re.findall(r'\bItem\s+No\.?\s*\d+\b',
+                                                  clean(after_html), re.I))
+                    if after_count < before_count:
+                        target = self.page.get_by_text(name, exact=True).first
+                        target.click(timeout=3500)
+                        self.page.wait_for_timeout(300)
+                    elif after_count > before_count:
+                        clicked_suppliers += 1
+                except Exception as exc:
+                    log.debug('  Cannot expand supplier %s: %s', name, exc)
+            if clicked_suppliers:
+                html2 = self.page.content()
+                text2 = clean(html2)
+                respondents = self._parse_respondents(html2, text2, tender['doc_no'])
+
+            priced = [r for r in respondents if r.get('bid_items')]
+            detailed_items = sum(len(r.get('bid_items') or []) for r in respondents)
+            from collections import Counter
+            by_option = Counter((v.get('project'), v.get('option')) for r in respondents
+                                for v in (r.get('bid_items') or []) if v.get('price') is not None)
+            if by_option:
+                log.info('  BID_OPTIONS %s: %s', tender['doc_no'],
+                         ', '.join('%s/%s=%d bids' % (p, opt, n)
+                                   for (p, opt), n in sorted(by_option.items())))
+            log.info('  Bid detail expansion %s: groups=%d suppliers=%d; '
+                     'respondents=%d priced_suppliers=%d bid_items=%d; DOM Item No=%d',
+                     tender['doc_no'], expanded_groups, clicked_suppliers,
+                     len(respondents), len(priced), detailed_items,
+                     len(re.findall(r'\bItem\s+No\.?\s*\d+\b', clean(html2), re.I)))
+            if respondents and not priced and any(r.get('total_price') is not None for r in respondents):
+                log.warning('  ITEM_PRICES_MISSING %s: GeBIZ totals present but item '
+                            'breakdown unavailable. Will retry; no inferred prices.',
+                            tender['doc_no'])
             tender['respondents_complete'] = (len(respondents) == tender['respondents_expected'])
             if not tender['respondents_complete']:
                 log.warning('  INCOMPLETE %s: scraped %d / expected %d (or prices missing)',
@@ -720,24 +786,43 @@ class GeBIZScraper:
             bid_items=[]
             for j,it in enumerate(items):
                 block=section[it.end():items[j+1].start() if j+1<len(items) else len(section)]
-                # Preserve the full option identifier. In combined tenders,
-                # "1A" / "2B" are different choices from A / B.
-                option=re.search(r'\bOPTION\s+(\d*\s*[AB])\b',block,re.I)
-                project=re.search(r'\bPROJ(?:ECT)?\.?\s*[:#-]?\s*([A-Z]{1,5})\b',block,re.I)
+                # Extract only the project and option described by THIS Item,
+                # e.g. Item 4 / OPTION 2B / PROJECT DD.  Never distribute one
+                # firm's published total across projects or alternatives.
+                option_m=re.search(r'\bOPTION\s*[:#-]?\s*(\d{0,2}\s*[AB])\b',block,re.I)
+                project_m=re.search(r'\bPROJ(?:ECT)?\.?\s*[:#-]?\s*([A-Z]{1,5}(?:\s*[-/]\s*[A-Z]{1,5})?)\b',block,re.I)
+                if not option_m or not project_m:
+                    # An Item without a confirmable project/option cannot be
+                    # assigned safely to a price-comparison column.
+                    continue
                 base=re.search(r'\bBASE\s+BID\b',block,re.I)
-                if not base: continue
-                # Base-bid block only: ignore company header total and other items.
-                block_after=block[base.end():]
-                for stop in ('ALTERNATIVE BID','OPTIONAL BID','REMARKS'):
-                    stop_match=re.search(r'\b'+stop+r'\b',block_after,re.I)
-                    if stop_match: block_after=block_after[:stop_match.start()]
-                amounts=re.findall(r'([\d,]+\.\d{2,4})\s*\(SGD\)',block_after,re.I)
-                if not amounts: continue
-                raw=option.group(1).replace(' ','').upper() if option else None
+                if not base:
+                    continue
+                detail=block[base.end():]
+                stop=re.search(r'\b(?:ALTERNATIVE\s+BID|OPTIONAL\s+BID|No\.\s*of\s*Companies)\b',detail,re.I)
+                if stop: detail=detail[:stop.start()]
+                # GeBIZ shows two money cells (Unit Price, Total Price). Pick
+                # the final amount *inside this Base Bid table*, not the firm
+                # heading's combined total. Accept both 2 and 4 decimal places.
+                prices=re.findall(r'(?<!\w)([\d,]+\.\d{2,4})\s*(?:\(SGD\)|SGD\b)',detail,re.I)
+                if not prices:
+                    prices=re.findall(r'(?<!\w)([\d,]+\.\d{2,4})\s*\(SGD\)',detail,re.I)
+                if not prices:
+                    continue
+                option=option_m.group(1).replace(' ','').upper()
+                project=re.sub(r'\s*([- /])\s*',r'\1',project_m.group(1)).upper()
+                price=float(prices[-1].replace(',',''))
                 bid_items.append({'item_no':int(it.group(1)),
-                                  'project':project.group(1).upper() if project else None,
-                                  'option':raw,
-                                  'price':float(amounts[-1].replace(',',''))})
+                                  'project':project,
+                                  'option':option,
+                                  'price':price})
+            # Preserve Item identity, even if the accordion yields a duplicate.
+            seen_item_keys=set(); bid_items_unique=[]
+            for item in bid_items:
+                key=(item['item_no'],item['project'],item['option'])
+                if key not in seen_item_keys:
+                    seen_item_keys.add(key); bid_items_unique.append(item)
+            bid_items=bid_items_unique
             # Legacy opt_a/opt_b are populated only for a genuine one-project
             # A/B tender. Multi-project comparisons must use bid_items.
             project_codes={v['project'] for v in bid_items if v['project']}
@@ -751,8 +836,11 @@ class GeBIZScraper:
                 'opt_a':legacy.get('A'), 'opt_b':legacy.get('B'),
                 'total_price':total, 'price_pending':not bool(bid_items)})
         result.sort(key=lambda r: (not r['shortlisted'], r['total_price'] if r['total_price'] is not None else float('inf')))
-        log.info('Respondents parsed for %s: %d (%d shortlisted / %d not shortlisted)',
-                 doc_no,len(result),sum(r['shortlisted'] for r in result),sum(not r['shortlisted'] for r in result))
+        log.info('Respondents parsed for %s: %d (%d shortlisted / %d not shortlisted), '
+                 'bid_items=%d',
+                 doc_no,len(result),sum(r['shortlisted'] for r in result),
+                 sum(not r['shortlisted'] for r in result),
+                 sum(len(r.get('bid_items') or []) for r in result))
         return result
 
     def _parse_award(self, html, text, tender):
