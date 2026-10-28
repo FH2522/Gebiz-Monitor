@@ -789,74 +789,370 @@
         {
           "name": "CHIU TENG CONSTRUCTION CO. PTE. LTD.",
           "shortlisted": true,
-          "bid_items": [],
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "DD",
+              "option": "1A",
+              "price": 268000000.0
+            },
+            {
+              "item_no": 2,
+              "project": "DD",
+              "option": "1B",
+              "price": 271000000.0
+            },
+            {
+              "item_no": 3,
+              "project": "DD",
+              "option": "2A",
+              "price": 273861400.0
+            },
+            {
+              "item_no": 4,
+              "project": "DD",
+              "option": "2B",
+              "price": 276861400.0
+            },
+            {
+              "item_no": 5,
+              "project": "DO",
+              "option": "1A",
+              "price": 94200000.0
+            },
+            {
+              "item_no": 6,
+              "project": "DO",
+              "option": "1B",
+              "price": 94700000.0
+            }
+          ],
           "opt_a": null,
           "opt_b": null,
           "total_price": 1276900000.0,
-          "price_pending": true
+          "price_pending": false
         },
         {
           "name": "LIM WEN HENG CONSTRUCTION PTE LTD",
           "shortlisted": true,
-          "bid_items": [],
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "DD",
+              "option": "1A",
+              "price": 280000000.0
+            },
+            {
+              "item_no": 2,
+              "project": "DD",
+              "option": "1B",
+              "price": 283000000.0
+            },
+            {
+              "item_no": 3,
+              "project": "DD",
+              "option": "2A",
+              "price": 283000000.0
+            },
+            {
+              "item_no": 4,
+              "project": "DD",
+              "option": "2B",
+              "price": 286000000.0
+            },
+            {
+              "item_no": 5,
+              "project": "DO",
+              "option": "1A",
+              "price": 91500000.0
+            },
+            {
+              "item_no": 6,
+              "project": "DO",
+              "option": "1B",
+              "price": 92000000.0
+            }
+          ],
           "opt_a": null,
           "opt_b": null,
           "total_price": 1315500000.0,
-          "price_pending": true
+          "price_pending": false
         },
         {
           "name": "CHIP ENG SENG CONTRACTORS (1988) PTE LTD",
           "shortlisted": true,
-          "bid_items": [],
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "DD",
+              "option": "1A",
+              "price": 277250000.0
+            },
+            {
+              "item_no": 2,
+              "project": "DD",
+              "option": "1B",
+              "price": 280183000.0
+            },
+            {
+              "item_no": 3,
+              "project": "DD",
+              "option": "2A",
+              "price": 283920000.0
+            },
+            {
+              "item_no": 4,
+              "project": "DD",
+              "option": "2B",
+              "price": 286853000.0
+            },
+            {
+              "item_no": 5,
+              "project": "DO",
+              "option": "1A",
+              "price": 94720000.0
+            },
+            {
+              "item_no": 6,
+              "project": "DO",
+              "option": "1B",
+              "price": 95400000.0
+            }
+          ],
           "opt_a": null,
           "opt_b": null,
           "total_price": 1318326000.0,
-          "price_pending": true
+          "price_pending": false
         },
         {
           "name": "VICO CONSTRUCTION PTE. LTD.",
           "shortlisted": true,
-          "bid_items": [],
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "DD",
+              "option": "1A",
+              "price": 279315000.0
+            },
+            {
+              "item_no": 2,
+              "project": "DD",
+              "option": "1B",
+              "price": 283280000.0
+            },
+            {
+              "item_no": 3,
+              "project": "DD",
+              "option": "2A",
+              "price": 282735000.0
+            },
+            {
+              "item_no": 4,
+              "project": "DD",
+              "option": "2B",
+              "price": 286700000.0
+            },
+            {
+              "item_no": 5,
+              "project": "DO",
+              "option": "1A",
+              "price": 93007000.0
+            },
+            {
+              "item_no": 6,
+              "project": "DO",
+              "option": "1B",
+              "price": 93907000.0
+            }
+          ],
           "opt_a": null,
           "opt_b": null,
           "total_price": 1318944000.0,
-          "price_pending": true
+          "price_pending": false
         },
         {
           "name": "CHINA CONSTRUCTION (SOUTH PACIFIC) DEVELOPMENT CO. PTE. LTD.",
           "shortlisted": true,
-          "bid_items": [],
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "DD",
+              "option": "1A",
+              "price": 281800000.0
+            },
+            {
+              "item_no": 2,
+              "project": "DD",
+              "option": "1B",
+              "price": 284800000.0
+            },
+            {
+              "item_no": 3,
+              "project": "DD",
+              "option": "2A",
+              "price": 284800000.0
+            },
+            {
+              "item_no": 4,
+              "project": "DD",
+              "option": "2B",
+              "price": 287800000.0
+            },
+            {
+              "item_no": 5,
+              "project": "DO",
+              "option": "1A",
+              "price": 91700000.0
+            },
+            {
+              "item_no": 6,
+              "project": "DO",
+              "option": "1B",
+              "price": 92200000.0
+            }
+          ],
           "opt_a": null,
           "opt_b": null,
           "total_price": 1323100000.0,
-          "price_pending": true
+          "price_pending": false
         },
         {
           "name": "WELLTECH CONSTRUCTION PTE LTD",
           "shortlisted": true,
-          "bid_items": [],
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "DD",
+              "option": "1A",
+              "price": 282600000.0
+            },
+            {
+              "item_no": 2,
+              "project": "DD",
+              "option": "1B",
+              "price": 284600000.0
+            },
+            {
+              "item_no": 3,
+              "project": "DD",
+              "option": "2A",
+              "price": 283600000.0
+            },
+            {
+              "item_no": 4,
+              "project": "DD",
+              "option": "2B",
+              "price": 285600000.0
+            },
+            {
+              "item_no": 5,
+              "project": "DO",
+              "option": "1A",
+              "price": 98000000.0
+            },
+            {
+              "item_no": 6,
+              "project": "DO",
+              "option": "1B",
+              "price": 99000000.0
+            }
+          ],
           "opt_a": null,
           "opt_b": null,
           "total_price": 1333400000.0,
-          "price_pending": true
+          "price_pending": false
         },
         {
           "name": "BHCC CONSTRUCTION PTE. LTD.",
           "shortlisted": true,
-          "bid_items": [],
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "DD",
+              "option": "1A",
+              "price": 287688000.0
+            },
+            {
+              "item_no": 2,
+              "project": "DD",
+              "option": "1B",
+              "price": 290688000.0
+            },
+            {
+              "item_no": 3,
+              "project": "DD",
+              "option": "2A",
+              "price": 287688000.0
+            },
+            {
+              "item_no": 4,
+              "project": "DD",
+              "option": "2B",
+              "price": 290688000.0
+            },
+            {
+              "item_no": 5,
+              "project": "DO",
+              "option": "1A",
+              "price": 100000000.0
+            },
+            {
+              "item_no": 6,
+              "project": "DO",
+              "option": "1B",
+              "price": 100300000.0
+            }
+          ],
           "opt_a": null,
           "opt_b": null,
           "total_price": 1357052000.0,
-          "price_pending": true
+          "price_pending": false
         },
         {
           "name": "TEAMBUILD ENGINEERING & CONSTRUCTION PTE. LTD.",
           "shortlisted": true,
-          "bid_items": [],
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "DD",
+              "option": "1A",
+              "price": 280658000.0
+            },
+            {
+              "item_no": 2,
+              "project": "DD",
+              "option": "1B",
+              "price": 284618000.0
+            },
+            {
+              "item_no": 3,
+              "project": "DD",
+              "option": "2A",
+              "price": 284448000.0
+            },
+            {
+              "item_no": 4,
+              "project": "DD",
+              "option": "2B",
+              "price": 288408000.0
+            },
+            {
+              "item_no": 5,
+              "project": "DO",
+              "option": "1A",
+              "price": 113608000.0
+            },
+            {
+              "item_no": 6,
+              "project": "DO",
+              "option": "1B",
+              "price": 114518000.0
+            }
+          ],
           "opt_a": null,
           "opt_b": null,
           "total_price": 1366258000.0,
-          "price_pending": true
+          "price_pending": false
         },
         {
           "name": "KAH ENGINEERING (1986) PTE. LTD.",
@@ -1078,8 +1374,8 @@
       ]
     }
   ],
-  "last_updated": "28 Oct 2026, 09:50:46",
-  "run_count": 14,
+  "last_updated": "28 Oct 2026, 12:05:45",
+  "run_count": 15,
   "cancelled": [
     {
       "title": "PROJECT 1: BUILDING WORKS AT PROJECT EH (TOTAL: 834 DWELLING UNITS ); PROJECT 2: ROAD IMPROVEMENT AND INFRASTRUCTURE WORKS AT PROJECT EH",
