@@ -10,7 +10,7 @@ Environment variables:
 """
 
 import sys, io, os, time, json, logging, re, urllib.request, urllib.parse
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
@@ -307,6 +307,30 @@ def save_notified(notified):
     with open(NOTIFIED_FILE, "w", encoding='utf-8') as f:
         json.dump(list(notified), f)
 
+# Official deadlines use Singapore local time, not the UTC timezone of GitHub Actions.
+SG_TZ = timezone(timedelta(hours=8))  # Singapore is UTC+08:00 year-round
+
+def closing_timestamp(value):
+    """Read GeBIZ deadlines such as '17 Nov 2026 04:00PM'. Return aware datetime."""
+    m = re.search(r"(\d{1,2})\s+([A-Za-z]{3,9})\s+(\d{4})\s+(\d{1,2}):(\d{2})\s*(AM|PM)",
+                  str(value or ""), re.I)
+    if not m:
+        return None
+    date_string = " ".join((m.group(1), m.group(2)[:3].title(), m.group(3),
+                            m.group(4)+":"+m.group(5)+m.group(6).upper()))
+    try:
+        return datetime.strptime(date_string, "%d %b %Y %I:%M%p").replace(tzinfo=SG_TZ)
+    except ValueError:
+        return None
+
+def is_future_deadline(tender):
+    deadline = closing_timestamp(tender.get("close_date"))
+    return deadline is not None and deadline > datetime.now(SG_TZ)
+
+def award_exists(tender):
+    return bool(tender.get("award_confirmed") or tender.get("awarded_to") or
+                tender.get("status") == "Awarded")
+
 def clean(s):
     s = re.sub(r'<[^>]+>', ' ', s)
     s = re.sub(r'&amp;', '&', s)
@@ -525,11 +549,18 @@ class GeBIZScraper:
 
         # Closing/Closed date — can be "Closed DD Mon YYYY HH:MMam" or "Closing on DD Mon..."
         close_m = re.search(
-            r'(?:Closed|Closing on)\s+(\d{1,2}\s+\w+\s+\d{4})\s+(\d{1,2}:\d{2}\s*(?:AM|PM)?)',
+            r'\b(Closed|Closing on)\s+(\d{1,2}\s+\w+\s+\d{4})\s+(\d{1,2}:\d{2}\s*(?:AM|PM)?)',
             text, re.IGNORECASE
         )
         if close_m:
-            tender["close_date"] = close_m.group(1).strip() + " " + close_m.group(2).strip()
+            tender["close_date"] = close_m.group(2).strip() + " " + close_m.group(3).strip()
+            # An extended tender can return from Closed to Open. Do not rely on
+            # its previous status or the tab where it was discovered.
+            if (not award_exists(tender) and tender.get('status') != 'Cancelled'
+                    and (close_m.group(1).lower().startswith('closing') or is_future_deadline(tender))
+                    and is_future_deadline(tender)):
+                tender['status'] = 'Open'
+                tender['under_evaluation'] = False
 
         return tender
 
@@ -592,8 +623,9 @@ class GeBIZScraper:
             if not resp_val_m:
                 log.warning("  No Respondents tab found for %s", tender["doc_no"])
                 self._parse_award(html, text, tender)
-                tender['status'] = 'Awarded' if tender.get('award_confirmed') else 'Closed'
-                tender['under_evaluation'] = tender['status'] != 'Awarded'
+                tender['status'] = ('Awarded' if tender.get('award_confirmed') else
+                                    'Open' if is_future_deadline(tender) else 'Closed')
+                tender['under_evaluation'] = tender['status'] == 'Closed'
                 return []
             resp_val = resp_val_m.group(1)
             tender["respondents_expected"] = int(re.search(r"\((\d+)\)", resp_val).group(1))
@@ -636,65 +668,89 @@ class GeBIZScraper:
                     return []
                 log.info("  Project %s confirmed in respondents page", proj_code)
 
-            # GeBIZ may show *separate* Expand All controls for shortlisted and
-            # not-shortlisted suppliers.  Clicking only the first loses bid items.
-            # Re-select the first remaining Expand All each time (DOM can change).
+            # Expand each *distinct* Expand All control ONCE. The old loop
+            # clicked the first control up to eight times, toggling entire
+            # sections back to collapsed on some GeBIZ page templates.
             expanded_groups = 0
-            for _ in range(8):
+            # Locate BOTH labels so positions remain stable when a button
+            # changes its text from 'Expand All' to 'Collapse All'.
+            expand_buttons = self.page.get_by_text(re.compile(r'^(?:Expand All|Collapse All)$', re.I))
+            for group_i in range(min(expand_buttons.count(), 12)):
                 try:
-                    expand = self.page.get_by_text('Expand All', exact=True)
-                    n = expand.count()
-                    if n == 0: break
-                    clickable = next((expand.nth(i) for i in range(n)
-                                      if expand.nth(i).is_visible()), None)
-                    if clickable is None: break
-                    before = self.page.content()
-                    clickable.click(timeout=5000)
+                    btn = expand_buttons.nth(group_i)
+                    if not btn.is_visible() or not re.fullmatch(r'Expand All', btn.inner_text().strip(), re.I):
+                        continue
+                    before_count = len(re.findall(r'\bItem\s+No\.?\s*\d+\b',
+                                                   clean(self.page.content()), re.I))
+                    btn.click(timeout=5000)
                     self.page.wait_for_timeout(700)
-                    after = self.page.content()
-                    if before == after:
-                        log.warning('  Expand All did not change the DOM for %s', tender['doc_no'])
-                        break
-                    expanded_groups += 1
+                    after_count = len(re.findall(r'\bItem\s+No\.?\s*\d+\b',
+                                                  clean(self.page.content()), re.I))
+                    if after_count < before_count:
+                        # An accordion was already open; restore it.
+                        btn.click(timeout=5000)
+                        self.page.wait_for_timeout(500)
+                    elif after_count > before_count:
+                        expanded_groups += 1
                 except Exception as exc:
-                    log.info('  Expand All stopped: %s', exc)
-                    break
+                    log.info('  Expand All group %d: %s', group_i, exc)
+
             html2 = self.page.content()
             text2 = clean(html2)
             respondents = self._parse_respondents(html2, text2, tender['doc_no'])
 
-            # Fallback: some GeBIZ templates only expand a supplier by clicking
-            # its name.  Only click missing bidder details; if it collapses an
-            # existing block, click again to restore the original DOM.
+            # Some templates only show ONE expanded supplier at a time. Capture
+            # a snapshot after EACH click; do not wait until the last click,
+            # which could hide previously opened companies' Item tables.
             missing = [r['name'] for r in respondents
                        if r.get('shortlisted') is not False and not r.get('bid_items')]
+            collected = {re.sub(r'[^A-Z0-9]', '', r['name'].upper()): r
+                         for r in respondents}
             clicked_suppliers = 0
             for name in missing[:60]:
                 try:
-                    loc = self.page.get_by_text(name, exact=True)
-                    if not loc.count(): continue
-                    target = loc.first
-                    if not target.is_visible(): continue
-                    before_html = self.page.content()
+                    locator = self.page.get_by_text(name, exact=True)
+                    if not locator.count():
+                        continue
+                    target = locator.first
+                    if not target.is_visible():
+                        continue
+                    before = self.page.content()
                     before_count = len(re.findall(r'\bItem\s+No\.?\s*\d+\b',
-                                                   clean(before_html), re.I))
+                                                  clean(before), re.I))
                     target.click(timeout=3500)
-                    self.page.wait_for_timeout(350)
-                    after_html = self.page.content()
+                    self.page.wait_for_timeout(400)
+                    after = self.page.content()
                     after_count = len(re.findall(r'\bItem\s+No\.?\s*\d+\b',
-                                                  clean(after_html), re.I))
+                                                 clean(after), re.I))
                     if after_count < before_count:
-                        target = self.page.get_by_text(name, exact=True).first
-                        target.click(timeout=3500)
-                        self.page.wait_for_timeout(300)
-                    elif after_count > before_count:
+                        # Avoid closing a previously expanded accordion.
+                        self.page.get_by_text(name, exact=True).first.click(timeout=3500)
+                        self.page.wait_for_timeout(350)
+                        after = self.page.content()
+                    fresh = self._parse_respondents(after, clean(after), tender['doc_no'])
+                    key = re.sub(r'[^A-Z0-9]', '', name.upper())
+                    detailed = next((r for r in fresh
+                                     if re.sub(r'[^A-Z0-9]', '',r['name'].upper()) == key), None)
+                    if detailed and detailed.get('bid_items'):
+                        old = collected.get(key, {})
+                        old_ids = {(v.get('item_no'),v.get('project'),v.get('option')):v
+                                   for v in old.get('bid_items', [])}
+                        for v in detailed['bid_items']:
+                            old_ids[(v.get('item_no'),v.get('project'),v.get('option'))] = v
+                        for k,v in detailed.items():
+                            if v is not None or k not in old:
+                                old[k] = v
+                        old['bid_items'] = list(old_ids.values())
+                        collected[key] = old
                         clicked_suppliers += 1
                 except Exception as exc:
                     log.debug('  Cannot expand supplier %s: %s', name, exc)
-            if clicked_suppliers:
-                html2 = self.page.content()
-                text2 = clean(html2)
-                respondents = self._parse_respondents(html2, text2, tender['doc_no'])
+            respondents = list(collected.values())
+            respondents.sort(key=lambda r:(r.get('shortlisted') is False,
+                                           r.get('total_price') if r.get('total_price') is not None
+                                           else float('inf')))
+            html2 = self.page.content()
 
             priced = [r for r in respondents if r.get('bid_items')]
             detailed_items = sum(len(r.get('bid_items') or []) for r in respondents)
@@ -714,6 +770,9 @@ class GeBIZScraper:
                 log.warning('  ITEM_PRICES_MISSING %s: GeBIZ totals present but item '
                             'breakdown unavailable. Will retry; no inferred prices.',
                             tender['doc_no'])
+                log.warning('  ITEM_DEBUG %s: expanded_groups=%d, individual_supplier_success=%d, DOM_items=%d',
+                            tender['doc_no'], expanded_groups, clicked_suppliers,
+                            len(re.findall(r'\bItem\s+No\.?\s*\d+\b', clean(html2), re.I)))
             tender['respondents_complete'] = (len(respondents) == tender['respondents_expected'])
             if not tender['respondents_complete']:
                 log.warning('  INCOMPLETE %s: scraped %d / expected %d (or prices missing)',
@@ -725,8 +784,9 @@ class GeBIZScraper:
             award_button = re.search(r'value="(Award\s*\(\d+\))"',html2,re.I)
             if award_button:
                 tender = self._parse_award(html2,text2,tender)
-            tender['status'] = 'Awarded' if tender.get('award_confirmed') or tender.get('awarded_to') else 'Closed'
-            tender['under_evaluation'] = tender['status'] != 'Awarded'
+            tender['status'] = ('Awarded' if tender.get('award_confirmed') or tender.get('awarded_to') else
+                                'Open' if is_future_deadline(tender) else 'Closed')
+            tender['under_evaluation'] = tender['status'] == 'Closed'
             return respondents
 
         except Exception as e:
@@ -952,6 +1012,23 @@ def run_check():
         save_data(data)
         return
 
+    # Reconcile GeBIZ status against the LIVE detail page. The listing may
+    # contain a stale Closed result even after an official deadline extension.
+    # This is also how an archived Closed tender can return to Open.
+    for doc_no, t in list(closed_items.items()):
+        if t.get('status') == 'Cancelled':
+            continue
+        checked = scraper.visit_detail(t)
+        if checked.get('hdb_verified') and checked.get('status') == 'Open' and is_future_deadline(checked):
+            log.info('REOPENED %s: extended closing date %s; Closed -> Open',
+                     doc_no, checked.get('close_date'))
+            open_items[doc_no] = checked
+            closed_items.pop(doc_no, None)
+    for doc_no in set(open_items) & set(closed_items):
+        # The live overview takes precedence over conflicting search tabs.
+        if is_future_deadline(open_items[doc_no]):
+            closed_items.pop(doc_no, None)
+
     # GeBIZ's Closed search tab includes CANCELLED tenders. Archive them, but
     # never present them as Open / Closed / Awarded and never send bid alerts.
     cancelled_items = {**{k:v for k,v in open_items.items() if v.get('status') == 'Cancelled'},
@@ -980,32 +1057,47 @@ def run_check():
         scraper.stop()
         return
 
-    # Process open tenders
+    # Process open tenders, including formerly Closed tenders re-opened after
+    # a corrigendum. Always refresh the date from GeBIZ before storing it.
     new_open   = 0
-    new_closed = 0  # declared here so auto-close block can increment it
+    new_closed = 0
     for doc_no, t in open_items.items():
         if doc_no in cancelled_ids:
             continue
-        if doc_no not in seen_open:
-            log.info("NEW OPEN: %s", t["title"][:65])
+        if not t.get('hdb_verified') or not t.get('close_date'):
             t = scraper.visit_detail(t)
-            if not t.get("hdb_verified"):
-                continue
-            entry = {**t, "added": datetime.now().strftime("%d %b %Y, %H:%M")}
-            data["open"].append(entry)
+        if not t.get('hdb_verified'):
+            continue
+        if doc_no in seen_closed:
+            old_entry = next((e for e in data['closed'] if e.get('doc_no') == doc_no), None)
+            if old_entry and not award_exists(old_entry):
+                data['closed'].remove(old_entry)
+                for field in ('title', 'url', 'close_date', 'published', 'agency', 'hdb_verified'):
+                    if t.get(field): old_entry[field] = t[field]
+                old_entry['status'] = 'Open'
+                old_entry['under_evaluation'] = False
+                data['open'].append(old_entry)  # retain prior respondent history
+                seen_open.add(doc_no)
+                seen_closed.discard(doc_no)
+                log.info('MOVED_TO_OPEN %s: %s', doc_no, old_entry.get('close_date'))
+        if doc_no not in seen_open:
+            log.info('NEW OPEN: %s', t['title'][:65])
+            entry = {**t, 'status':'Open',
+                     'added': datetime.now(SG_TZ).strftime('%d %b %Y, %H:%M')}
+            data['open'].append(entry)
             seen_open.add(doc_no)
             new_open += 1
             if doc_no not in notified:
-                tg_send(tg_fmt_open(entry))   # 🔔 alert
+                tg_send(tg_fmt_open(entry))
                 notified.add(doc_no)
                 save_notified(notified)
         else:
-            # Refresh dates each run
-            t = scraper.visit_detail(t)
-            for e in data["open"]:
-                if e["doc_no"] == doc_no:
-                    if t["close_date"]: e["close_date"] = t["close_date"]
-                    if t["published"]:  e["published"]  = t["published"]
+            for e in data['open']:
+                if e['doc_no'] == doc_no:
+                    for field in ('close_date', 'published', 'title', 'url'):
+                        if t.get(field): e[field] = t[field]
+                    e['status'] = 'Open'
+                    break
 
     # Process closed tenders from GeBIZ search results
     for doc_no, t in closed_items.items():
@@ -1110,9 +1202,9 @@ def run_check():
                             e[flag] = t[flag]
                         elif flag == "under_evaluation" and flag not in t and e.get(flag):
                             del e[flag]  # clear stale under_evaluation if award is now present
-                    if t.get("close_date") and not e.get("close_date"):
+                    if t.get("close_date"):
                         e["close_date"] = t["close_date"]
-                    if t.get("published") and not e.get("published"):
+                    if t.get("published"):
                         e["published"] = t["published"]
                     log.info("  Re-fetched: %d respondents, under_eval=%s, awarded=%s",
                              len(e.get("respondents",[])), e.get("under_evaluation"), e.get("awarded_to"))
@@ -1144,6 +1236,32 @@ def run_check():
     # Remove any open entries that are now in closed (so they don't show in both tabs)
     closed_doc_nos = {t["doc_no"] for t in data["closed"]}
     data["open"] = [t for t in data["open"] if t["doc_no"] not in closed_doc_nos]
+
+    # FINAL STATUS RECONCILIATION: historical JSON can retain a future-dated
+    # tender under Closed after an earlier failed run. No confirmed Award may
+    # move to Open. Keep respondent and option data when moving records.
+    reopened = []
+    still_closed = []
+    for e in data['closed']:
+        if not award_exists(e) and is_future_deadline(e):
+            e['status'] = 'Open'
+            e['under_evaluation'] = False
+            reopened.append(e)
+            log.info('MOVED_TO_OPEN %s from stored closing date %s',
+                     e.get('doc_no'), e.get('close_date'))
+        else:
+            still_closed.append(e)
+    data['closed'] = still_closed
+    existing_open = {e.get('doc_no'):e for e in data['open']}
+    for e in reopened:
+        if e.get('doc_no') in existing_open:
+            prior = existing_open[e['doc_no']]
+            # Prefer the latest verified detail; never lose a known tender.
+            for key in ('close_date', 'published', 'title', 'url'):
+                if e.get(key) and not prior.get(key): prior[key] = e[key]
+        else:
+            data['open'].append(e)
+            existing_open[e.get('doc_no')] = e
 
     # Retain legacy records only if they pass the updated title filter.
     # Existing records without verified agency are kept for review instead of
