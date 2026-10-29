@@ -537,17 +537,14 @@
       <span class="live-dot"></span>
       <span id="last-updated" style="color:var(--muted)">—</span>
     </div>
-    <div class="hdr-meta" style="color:var(--muted)">
-      Refresh in <span id="countdown" style="color:var(--text);font-weight:500">0:30</span>
-    </div>
-    <button class="refresh-btn" onclick="loadData()">Refresh</button>
+    <button class="refresh-btn" onclick="loadData()" title="Check the latest saved GeBIZ data">Refresh</button>
   </div>
 </header>
 
 <div class="main">
 
   <div class="alert alert-info" id="how-it-works">
-    <span>This dashboard is updated automatically every ~30 minutes by GitHub Actions, which scrapes GeBIZ and refreshes the data.</span>
+    <span>GeBIZ data is checked approximately every 30 minutes by GitHub Actions. This dashboard loads data when opened; click Refresh to check for newer saved results.</span>
     <span class="alert-close" onclick="this.parentElement.style.display='none'">×</span>
   </div>
 
@@ -617,9 +614,6 @@
 </div>
 
 <script>
-let countdownSec = 30;
-let timerInterval;
-
 async function loadData() {
   let data = null;
   for (let attempt = 1; attempt <= 3; attempt++) {
@@ -636,7 +630,7 @@ async function loadData() {
   }
 
   document.getElementById('last-updated').textContent =
-    new Date().toLocaleTimeString('en-SG', {hour:'2-digit',minute:'2-digit'});
+    'Checked ' + new Date().toLocaleTimeString('en-SG', {hour:'2-digit',minute:'2-digit'});
 
   if (!data) {
     document.getElementById('no-data-alert').style.display = 'flex';
@@ -659,23 +653,42 @@ function isCancelled(t) {
   return /^(cancelled|canceled)$/i.test(String(t.status || '').trim());
 }
 
+function awardConfirmed(t) {
+  return t.status === 'Awarded' || !!t.award_confirmed || !!t.awarded_to;
+}
+function isFutureClosing(t) {
+  const ms = parseDate(t.close_date);
+  // A deadline in the future is Open regardless of a stale Closed label in
+  // an older JSON snapshot. Missing deadlines fall back to the known status.
+  return ms ? ms > Date.now() : t.status === 'Open';
+}
 function renderAll(data) {
-  // Cancelled tenders sometimes occur in the official Closed search results.
-  // Exclude them even if an old gebiz_data.json still contains these records.
-  const open   = (data.open   || []).filter(t => !isCancelled(t));
-  const closed = (data.closed || []).filter(t => !isCancelled(t));
-  document.getElementById('cnt-open').textContent   = open.length;
+  // Deduplicate across the legacy Open/Closed arrays, but never discard an
+  // awarded record. Official status and current deadline outrank old folders.
+  const byDoc = new Map();
+  for (const t of [...(data.closed || []), ...(data.open || [])]) {
+    if (isCancelled(t)) continue;
+    const key = String(t.doc_no || t.ref_no || t.title || '');
+    const old = byDoc.get(key);
+    if (!old || (!awardConfirmed(old) && awardConfirmed(t)) ||
+        (!awardConfirmed(old) && !awardConfirmed(t) &&
+         parseDate(t.close_date) > parseDate(old.close_date))) {
+      byDoc.set(key, t);
+    }
+  }
+  const all = [...byDoc.values()];
+  const open = all.filter(t => !awardConfirmed(t) && isFutureClosing(t));
+  const closed = all.filter(t => awardConfirmed(t) || !isFutureClosing(t));
+  const nonAwarded = closed.filter(t => !awardConfirmed(t));
+  const awarded = closed.filter(awardConfirmed);
+  document.getElementById('cnt-open').textContent = open.length;
   document.getElementById('cnt-closed').textContent = closed.length;
-  document.getElementById('cnt-total').textContent  = open.length + closed.length;
+  document.getElementById('cnt-total').textContent = all.length;
   document.getElementById('last-scraped').textContent = data.last_updated || '—';
-  document.getElementById('run-count').textContent  = data.run_count || '0';
-  // GeBIZ has non-two-envelope awards too: classify only by real award data.
-  const nonAwarded = closed.filter(t => !(t.status === 'Awarded' || t.awarded_to));
-  const awarded    = closed.filter(t => t.status === 'Awarded' || !!t.awarded_to);
+  document.getElementById('run-count').textContent = data.run_count || '0';
   renderOpen(open);
   renderClosed(nonAwarded);
   renderAwarded(awarded);
-  // Update awarded tab label with count
   const tabs = document.querySelectorAll('.tab');
   if (tabs[2]) tabs[2].textContent =
     'Awarded' + (awarded.length ? ' (' + awarded.length + ')' : '');
@@ -892,12 +905,22 @@ function fmtp(n) {
 
 function parseDate(s) {
   if (!s) return 0;
-  // "DD Mon YYYY HH:MMam" format
-  const m = s.match(/^(\d{1,2})\s+(\w+)\s+(\d{4})/);
-  if (m) return new Date(m[2] + ' ' + m[1] + ' ' + m[3]).getTime();
-  const parts = s.split('/');
-  if (parts.length === 3) return new Date(parts[2] + '-' + parts[1] + '-' + parts[0]).getTime();
-  return new Date(s).getTime() || 0;
+  const m = String(s).match(/^(\d{1,2})\s+([A-Za-z]{3,9})\s+(\d{4})(?:\s+(\d{1,2}):(\d{2})\s*(AM|PM))?/i);
+  if (m) {
+    const months = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+    const mon = months[m[2].slice(0,3).toLowerCase()];
+    if (mon !== undefined) {
+      let hour = Number(m[4] || 0);
+      if (m[6]) hour = (hour % 12) + (m[6].toUpperCase() === 'PM' ? 12 : 0);
+      // GeBIZ deadlines use Singapore local time, UTC+08:00.
+      return Date.UTC(Number(m[3]),mon,Number(m[1]),hour,Number(m[5]||0)) - 8*3600000;
+    }
+  }
+  const parts = String(s).split('/');
+  if (parts.length === 3 && /^\d+$/.test(parts[0])) {
+    return Date.UTC(Number(parts[2]),Number(parts[1])-1,Number(parts[0])) - 8*3600000;
+  }
+  return Date.parse(s) || 0;
 }
 
 function switchTab(name) {
@@ -908,20 +931,8 @@ function switchTab(name) {
   document.getElementById('tab-' + name).classList.add('active');
 }
 
-function startCountdown() {
-  clearInterval(timerInterval);
-  countdownSec = 30;
-  timerInterval = setInterval(() => {
-    countdownSec--;
-    const m = Math.floor(countdownSec / 60);
-    const s = countdownSec % 60;
-    document.getElementById('countdown').textContent = m + ':' + String(s).padStart(2,'0');
-    if (countdownSec <= 0) { loadData(); countdownSec = 30; }
-  }, 1000);
-}
-
+// Fetch once when the page opens. After that, only the Refresh button fetches again.
 loadData();
-startCountdown();
 </script>
 </body>
 </html>
