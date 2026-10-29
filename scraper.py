@@ -36,6 +36,99 @@ DU_TITLE_RE    = re.compile(r'TOTAL\s*:?\s*[\d,]+\s*DUs?\b', re.IGNORECASE)
 LPS_SEARCH_TERM      = "LPS"
 LPS_TITLE_MUST_HAVE  = ("large panel slab", "hdb")
 
+
+# One-time recovery data from the user's OFFICIAL GeBIZ Respondents PDF
+# (HDB000ETT26000050, printed 29 Oct 2026 14:35 SGT).
+# NOT extrapolated from displayed total: 20 respondents x 4 Item Total Prices,
+# ALL 20 published totals independently reconcile to the sum of the four Items.
+# This snapshot is only used to fill missing data when scraping is incomplete.
+# New live bids take precedence; a changed live total blocks the old snapshot.
+EL_DT_VERIFIED_PDF_SNAPSHOT = """
+BHCC CONSTRUCTION PTE. LTD.|607976000|222988000|225988000|79000000|80000000
+CHAN RONG FEN BUILDING CONSTRUCTION PTE LTD|593580000|223000000|226000000|72000000|72580000
+CHANG HUA CONSTRUCTION PTE LTD|580000000|220000000|220000000|70000000|70000000
+CHINA COMMUNICATIONS CONSTRUCTION COMPANY LIMITED (SINGAPORE BRANCH)|521614302|197151045|199260145|62379606|62823506
+CHIP ENG SENG CONTRACTORS (1988) PTE LTD|611376000|224288000|227488000|79400000|80200000
+CHIU TENG CONSTRUCTION CO. PTE. LTD.|566100000|211400000|214400000|70000000|70300000
+EXPAND CONSTRUCTION PTE LTD|644000000|244000000|246000000|77000000|77000000
+KIMLY CONSTRUCTION PRIVATE LIMITED|555466000|205478000|208988000|70000000|71000000
+KUAN AIK HONG CONSTRUCTION PTE LTD|605303000|220000000|221100000|81868000|82335000
+KWAN YONG CONSTRUCTION PTE LTD|617900000|229000000|230800000|78900000|79200000
+LC&T BUILDER (1971) PTE. LTD.|626200000|237200000|240300000|74000000|74700000
+MASTER CONTRACT SERVICES PTE LTD|624100000|226000000|228000000|84600000|85500000
+PRECISE DEVELOPMENT PTE. LTD.|545650000|206000000|207610000|65770000|66270000
+PROGRESSIVE BUILDERS PRIVATE LIMITED|570000000|208500000|210000000|75500000|76000000
+QINGJIAN INTERNATIONAL (SOUTH PACIFIC) GROUP DEVELOPMENT CO., PTE. LTD.|632800000|233600000|235600000|81600000|82000000
+RICH CONSTRUCTION COMPANY PTE. LTD.|590000000|218600000|219800000|75600000|76000000
+RIGHT CONSTRUCTION PTE LTD|530500000|202000000|203000000|62500000|63000000
+SH DESIGN & BUILD PTE. LTD.|510219000|192110000|192280000|62480000|63349000
+STRAITS CONSTRUCTION SINGAPORE PRIVATE LIMITED|580664000|213661000|216961000|74661000|75381000
+WEE HUR CONSTRUCTION PTE LTD|577800000|213900000|213900000|75000000|75000000
+"""
+
+def backfill_el_dt_pdf_snapshot(data):
+    """Recover only missing EL+DT Item prices from the supplied official PDF.
+
+    This data comes from the 29 Oct 2026 official printout, not a live API.
+    If GeBIZ publishes a later corrigendum, freshly scraped data wins.
+    """
+    doc_no = 'HDB000ETT26000050'
+    tender = next((t for t in data.get('closed', []) + data.get('open', [])
+                   if t.get('doc_no') == doc_no), None)
+    if tender is None:
+        return
+    expected = tender.get('respondents_expected')
+    if expected and int(expected) != 20:
+        log.warning('ELDT_PDF_BACKFILL skipped: official respondent count has changed to %s', expected)
+        return
+    def key(name):
+        return re.sub(r'[^A-Z0-9]', '', str(name).upper())
+    current = tender.setdefault('respondents', [])
+    by_name = {key(r.get('name','')): r for r in current}
+    recovered_companies = 0
+    recovered_items = 0
+    for line in EL_DT_VERIFIED_PDF_SNAPSHOT.strip().splitlines():
+        name, total, a1, b1, a2, b2 = line.split('|')
+        total = int(total)
+        row = by_name.get(key(name))
+        if row and row.get('total_price') is not None and abs(float(row['total_price']) - total) > 0.01:
+            # A newer GeBIZ corrigendum may have superseded the PDF.
+            log.warning('ELDT_PDF_BACKFILL skipped changed bid for %s', name)
+            continue
+        if row is None:
+            row = {'name':name, 'total_price':total, 'shortlisted':True,
+                   'bid_items':[], 'price_pending':False}
+            current.append(row)
+            by_name[key(name)] = row
+            recovered_companies += 1
+        if row.get('shortlisted') is False:
+            continue
+        if row.get('total_price') is None:
+            row['total_price'] = total
+        old_items = {(str(item.get('item_no')), str(item.get('project','')).upper(),
+                      str(item.get('option','')).upper()) for item in row.get('bid_items',[])
+                     if item.get('price') is not None}
+        for no,project,option,price in [(1,'EL','A',a1),(2,'EL','B',b1),
+                                        (3,'DT','A',a2),(4,'DT','B',b2)]:
+            identity=(str(no),project,option)
+            if identity not in old_items:
+                row.setdefault('bid_items', []).append(
+                    {'item_no':no,'project':project,'option':option,'price':int(price),
+                     'source':'GeBIZ PDF 2026-10-29'})
+                recovered_items += 1
+        row['price_pending'] = False
+    if recovered_companies or recovered_items:
+        tender['respondents_expected'] = 20
+        tender['respondents_complete'] = (len(current) == 20)
+        tender['item_prices_complete'] = (len(current) == 20 and all(
+            len([b for b in r.get('bid_items', []) if b.get('price') is not None]) >= 4
+            for r in current if r.get('shortlisted') is not False))
+        # Re-sort by live/published total, matching standard rendering order.
+        current.sort(key=lambda r: (r.get('shortlisted') is False,
+                                   r.get('total_price') if r.get('total_price') is not None else float('inf')))
+        log.info('ELDT_PDF_BACKFILL %s: added %d firms and %d verified Item prices; %d/%d firms',
+                 doc_no, recovered_companies, recovered_items, len(current), 20)
+
 # ── Telegram config (from environment, NOT hardcoded) ────────────────────────
 TG_TOKEN   = os.environ.get("TG_TOKEN", "").strip()
 TG_CHAT_ID = os.environ.get("TG_CHAT_ID", "").strip()
@@ -793,114 +886,119 @@ class GeBIZScraper:
             log.warning("  Respondent error %s: %s", tender.get("doc_no","?"), e)
             return []
     def _parse_respondents(self, html, text, doc_no):
-        """Read shortlisted and non-shortlisted suppliers without treating absent
-        prices as absent respondents. Company-level total and option-level bids
-        are deliberately separate fields.
+        """Read GeBIZ Respondents, including CORRIGENDUM and two-envelope views.
+
+        GeBIZ sometimes shows a CORRIGENDUM / VERSION 1 instead of separate
+        SHORTLISTED SUPPLIER(S) headings. The old parser skipped every company
+        in that case because its shortlisted flag stayed None.
         """
         from bs4 import BeautifulSoup
         from html import unescape
         soup = BeautifulSoup(html, 'html.parser')
-        chunks = [re.sub(r'\s+', ' ', unescape(t)).strip() for t in soup.stripped_strings]
-        chunks = [c for c in chunks if c]
-        start = next((i for i,c in enumerate(chunks) if re.search(r'\b\d+\s+suppliers?\s+responded\b', c, re.I)), None)
+        chunks = [re.sub(r'\s+', ' ', unescape(s)).strip() for s in soup.stripped_strings]
+        chunks = [s for s in chunks if s]
+        start = next((i for i,s in enumerate(chunks)
+                      if re.search(r'\b\d+\s+suppliers?\s+responded\b', s, re.I)), None)
         if start is None:
             log.warning('Respondents view absent for %s', doc_no)
             return []
         chunks = chunks[start+1:]
-        firm_end = re.compile(r'(?:PTE\.?\s*LTD\.?|PRIVATE LIMITED|LIMITED|LTD\.?|LLP|INC\.?)\s*$', re.I)
+        # CORRIGENDUM templates list all priced respondents under VERSION 1;
+        # other templates explicitly divide shortlisted/non-shortlisted firms.
+        has_shortlist_headings = any(re.match(r'^(?:NOT\s+)?SHORTLISTED\s+SUPPLIER', s, re.I)
+                                     for s in chunks)
+        shortlisted = None if has_shortlist_headings else True
+        firm_end = re.compile(
+            r'(?:PTE\.?\s*LTD\.?|PRIVATE\s+LIMITED|LTD\.?|LLP|'
+            r'\(SINGAPORE\s+BRANCH\))\s*$', re.I)
         amount = re.compile(r'^([\d,]+\.\d{2})\s*(?:\(SGD\))?$', re.I)
-        embedded = re.compile(r'^(.*?)\s+([\d,]+\.\d{2})\s*\(SGD\)$', re.I)
-        headings = []
-        shortlisted = None
+        embedded = re.compile(r'^(.*?)\s+([\d,]+\.\d{2})(?:\s*\(SGD\))?$', re.I)
+        def looks_like_company(s):
+            # Strictly company headings, not narrative text that happens to
+            # mention a company name (e.g. corrigendum explanation).
+            return bool(firm_end.search(s) and
+                        re.search(r'[A-Z]',s) and
+                        s.upper()==s and len(s)>=10 and
+                        not re.search(r'\b(?:ITEM\s+NO|OPTION\s+[AB]|AWARDED\s+TO)\b',s,re.I))
+        headings=[]
         for i,c in enumerate(chunks):
-            if re.match(r'^NOT\s+SHORTLISTED\s+SUPPLIER', c, re.I):
-                shortlisted = False
+            if re.match(r'^NOT\s+SHORTLISTED\s+SUPPLIER',c,re.I):
+                shortlisted=False
                 continue
-            if re.match(r'^SHORTLISTED\s+SUPPLIER', c, re.I):
-                shortlisted = True
+            if re.match(r'^SHORTLISTED\s+SUPPLIER',c,re.I):
+                shortlisted=True
                 continue
             if shortlisted is None:
                 continue
-            match = embedded.match(c)
-            if match and firm_end.search(match.group(1)):
-                headings.append((i,i+1,match.group(1).strip(),float(match.group(2).replace(',','')),shortlisted))
-            elif firm_end.search(c):
-                # Only a company heading is followed by a total, an accordion
-                # control, or a new section. Do not use names found inside bids.
-                following = chunks[i+1] if i+1 < len(chunks) else ''
-                m = amount.match(following)
-                if m:
-                    headings.append((i,i+2,c,float(m.group(1).replace(',','')),shortlisted))
-                elif not shortlisted and (not following or re.match(r'^(?:Expand|Collapse|No\. of Companies|Consortium|NOT\s+SHORTLISTED|SHORTLISTED)',following,re.I) or firm_end.search(following)):
-                    headings.append((i,i+1,c,None,False))
-        # If a not-shortlisted company is the last row, it may have no following
-        # text; the explicit NOT SHORTLISTED section remains authoritative.
-        result=[]; seen=set()
-        for idx,(begin,end,name,total,is_shortlisted) in enumerate(headings):
-            key=re.sub(r'\W+','',name).upper()
-            if key in seen: continue
+            if re.match(r'^(?:Back to Search Results|Government Electronic Business|Supported browsers)',c,re.I):
+                break
+            m=embedded.match(c)
+            if m and looks_like_company(m.group(1)):
+                headings.append((i,i+1,m.group(1).strip(),float(m.group(2).replace(',','')),shortlisted))
+                continue
+            if not looks_like_company(c):
+                continue
+            following=chunks[i+1] if i+1<len(chunks) else ''
+            a=amount.match(following)
+            if a:
+                headings.append((i,i+2,c,float(a.group(1).replace(',','')),shortlisted))
+            elif shortlisted is False and (not following or
+                    re.match(r'^(?:Expand|Collapse|No\. of Companies|Consortium|'
+                             r'NOT\s+SHORTLISTED|SHORTLISTED)',following,re.I) or
+                    looks_like_company(following)):
+                headings.append((i,i+1,c,None,False))
+        result=[]
+        seen=set()
+        for index,(begin,heading_end,name,total,is_shortlisted) in enumerate(headings):
+            key=re.sub(r'[^A-Z0-9]', '', name.upper())
+            if key in seen:
+                continue
             seen.add(key)
-            next_begin=headings[idx+1][0] if idx+1 < len(headings) else len(chunks)
-            section=' '.join(chunks[end:next_begin])
-            items=list(re.finditer(r'\bItem\s+No\.?\s*(\d+)\b',section,re.I))
-            bid_items=[]
-            for j,it in enumerate(items):
-                block=section[it.end():items[j+1].start() if j+1<len(items) else len(section)]
-                # Extract only the project and option described by THIS Item,
-                # e.g. Item 4 / OPTION 2B / PROJECT DD.  Never distribute one
-                # firm's published total across projects or alternatives.
+            following_begin=headings[index+1][0] if index+1<len(headings) else len(chunks)
+            section=' '.join(chunks[heading_end:following_begin])
+            matches=list(re.finditer(r'\bItem\s+No\.?\s*(\d+)\b',section,re.I))
+            item_map={}
+            for j,it in enumerate(matches):
+                block=section[it.end():matches[j+1].start() if j+1<len(matches) else len(section)]
                 option_m=re.search(r'\bOPTION\s*[:#-]?\s*(\d{0,2}\s*[AB])\b',block,re.I)
                 project_m=re.search(r'\bPROJ(?:ECT)?\.?\s*[:#-]?\s*([A-Z]{1,5}(?:\s*[-/]\s*[A-Z]{1,5})?)\b',block,re.I)
-                if not option_m or not project_m:
-                    # An Item without a confirmable project/option cannot be
-                    # assigned safely to a price-comparison column.
+                base_m=re.search(r'\bBASE\s+BID\b',block,re.I)
+                if not option_m or not project_m or not base_m:
                     continue
-                base=re.search(r'\bBASE\s+BID\b',block,re.I)
-                if not base:
+                body=block[base_m.end():]
+                # Remarks is a COLUMN HEADER, not the end of the Base Bid.
+                stop=re.search(r'\b(?:ALTERNATIVE\s+BID|OPTIONAL\s+BID|No\.\s*of\s*Companies)\b',body,re.I)
+                if stop: body=body[:stop.start()]
+                amounts=re.findall(r'(?<!\w)([\d,]+\.\d{2,4})\s*(?:\(SGD\)|SGD\b)',body,re.I)
+                if not amounts:
                     continue
-                detail=block[base.end():]
-                stop=re.search(r'\b(?:ALTERNATIVE\s+BID|OPTIONAL\s+BID|No\.\s*of\s*Companies)\b',detail,re.I)
-                if stop: detail=detail[:stop.start()]
-                # GeBIZ shows two money cells (Unit Price, Total Price). Pick
-                # the final amount *inside this Base Bid table*, not the firm
-                # heading's combined total. Accept both 2 and 4 decimal places.
-                prices=re.findall(r'(?<!\w)([\d,]+\.\d{2,4})\s*(?:\(SGD\)|SGD\b)',detail,re.I)
-                if not prices:
-                    prices=re.findall(r'(?<!\w)([\d,]+\.\d{2,4})\s*\(SGD\)',detail,re.I)
-                if not prices:
-                    continue
-                option=option_m.group(1).replace(' ','').upper()
+                # Each normal HDB Item is one LOT: the final figure is the
+                # Total Price (NOT the preceding Unit Price).
+                price=float(amounts[-1].replace(',',''))
                 project=re.sub(r'\s*([- /])\s*',r'\1',project_m.group(1)).upper()
-                price=float(prices[-1].replace(',',''))
-                bid_items.append({'item_no':int(it.group(1)),
-                                  'project':project,
-                                  'option':option,
-                                  'price':price})
-            # Preserve Item identity, even if the accordion yields a duplicate.
-            seen_item_keys=set(); bid_items_unique=[]
-            for item in bid_items:
-                key=(item['item_no'],item['project'],item['option'])
-                if key not in seen_item_keys:
-                    seen_item_keys.add(key); bid_items_unique.append(item)
-            bid_items=bid_items_unique
-            # Legacy opt_a/opt_b are populated only for a genuine one-project
-            # A/B tender. Multi-project comparisons must use bid_items.
-            project_codes={v['project'] for v in bid_items if v['project']}
+                option=option_m.group(1).replace(' ','').upper()
+                item_no=int(it.group(1))
+                item_map[(item_no,project,option)]={
+                    'item_no':item_no,'project':project,'option':option,'price':price}
+            bid_items=list(item_map.values())
+            codes={v['project'] for v in bid_items}
             legacy={}
-            if len(project_codes)<=1:
-                for bid in bid_items:
-                    if bid['option'] in ('A','B'):
-                        legacy[bid['option']]=bid['price']
+            if len(codes)==1:
+                for item in bid_items:
+                    if item['option'] in ('A','B'):
+                        legacy[item['option']]=item['price']
             result.append({'name':name,'shortlisted':is_shortlisted,
-                'bid_items':bid_items,
-                'opt_a':legacy.get('A'), 'opt_b':legacy.get('B'),
-                'total_price':total, 'price_pending':not bool(bid_items)})
-        result.sort(key=lambda r: (not r['shortlisted'], r['total_price'] if r['total_price'] is not None else float('inf')))
+                           'bid_items':bid_items,'opt_a':legacy.get('A'),
+                           'opt_b':legacy.get('B'),'total_price':total,
+                           'price_pending':is_shortlisted and not bool(bid_items)})
+        result.sort(key=lambda r: (r['shortlisted'] is False,
+                                   r['total_price'] if r['total_price'] is not None else float('inf')))
+        bid_count=sum(len(r['bid_items']) for r in result)
         log.info('Respondents parsed for %s: %d (%d shortlisted / %d not shortlisted), '
-                 'bid_items=%d',
-                 doc_no,len(result),sum(r['shortlisted'] for r in result),
-                 sum(not r['shortlisted'] for r in result),
-                 sum(len(r.get('bid_items') or []) for r in result))
+                 'bid_items=%d, corrigendum_no_shortlist_headings=%s',
+                 doc_no,len(result),sum(r['shortlisted'] is True for r in result),
+                 sum(r['shortlisted'] is False for r in result),bid_count,
+                 not has_shortlist_headings)
         return result
 
     def _parse_award(self, html, text, tender):
@@ -1182,7 +1280,14 @@ def run_check():
                                             known[identity(v)] = v
                                     combo['bid_items'] = list(known.values())
                                 elif field in ('opt_a','opt_b','total_price'):
-                                    if val is not None: combo[field] = val
+                                    if val is not None:
+                                        if field == 'total_price' and combo.get('total_price') is not None and \
+                                           abs(float(combo['total_price']) - float(val)) > 0.01:
+                                            # A new GeBIZ corrigendum invalidates older PDF
+                                            # fallback prices. Never display stale choices.
+                                            combo['bid_items'] = [item for item in combo.get('bid_items', [])
+                                                if item.get('source') != 'GeBIZ PDF 2026-10-29']
+                                        combo[field] = val
                                 elif field == 'price_pending':
                                     combo[field] = bool(val and not combo.get('bid_items') and combo.get('opt_a') is None and combo.get('opt_b') is None)
                                 elif val is not None: combo[field] = val
@@ -1275,6 +1380,9 @@ def run_check():
     # Defensive cleanup for historical data imported from older scraper versions.
     data['open'] = [t for t in data['open'] if t.get('status') != 'Cancelled']
     data['closed'] = [t for t in data['closed'] if t.get('status') != 'Cancelled']
+    # Fill legacy EL+DT data gaps using the supplied, fully validated PDF
+    # only when the most recent live run did not provide those Items.
+    backfill_el_dt_pdf_snapshot(data)
     save_data(data)
     scraper.stop()
     log.info("Done. +%d open +%d closed. Total: %d open %d closed.",
