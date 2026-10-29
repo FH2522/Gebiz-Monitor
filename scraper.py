@@ -33,8 +33,15 @@ GEBIZ_HOME      = "https://www.gebiz.gov.sg/"
 DU_SEARCH_TERM = "DUs"
 DU_TITLE_RE    = re.compile(r'TOTAL\s*:?\s*[\d,]+\s*DUs?\b', re.IGNORECASE)
 
-LPS_SEARCH_TERM      = "LPS"
-LPS_TITLE_MUST_HAVE  = ("large panel slab", "hdb")
+TERM_CONTRACT_SEARCH_TERMS = [
+    "term contract",
+    "LPS",
+    "PHS",
+    "PBU",
+    "large panel slab",
+    "household shelter",
+    "bathroom unit",
+]
 
 
 # One-time recovery data from the user's OFFICIAL GeBIZ Respondents PDF
@@ -430,14 +437,39 @@ def clean(s):
     s = re.sub(r'&nbsp;', ' ', s)
     return re.sub(r'\s+', ' ', s).strip()
 
-def title_matches(title):
-    """HDB construction matching: work type + project identifier + DU count."""
+def title_matches_building(title):
+    """HDB building works: work type + project identifier + DU count."""
     return bool(BUILDING_RE.search(title) and PROJECT_RE.search(title) and DU_COUNT_RE.search(title))
 
+def detect_term_kind(title):
+    t = str(title or '')
+    if re.search(r'\b(?:LPS|LARGE\s+PANEL\s+SLAB)\b', t, re.I):
+        return 'lps'
+    if re.search(r'\b(?:PHS|HOUSEHOLD\s+SHELTER)\b', t, re.I):
+        return 'phs'
+    if re.search(r'\b(?:PBU|BATHROOM\s+UNIT)\b', t, re.I):
+        return 'pbu'
+    return None
+
+def title_matches_term(title):
+    """HDB term contracts: title must include term contract + batch + a target package keyword."""
+    t = str(title or '')
+    return bool(re.search(r'\bterm\s+contract\b', t, re.I) and
+                re.search(r'\bbatch\b', t, re.I) and
+                detect_term_kind(t))
+
+def title_matches(title):
+    return title_matches_building(title)
+
 def is_lps(title):
-    """Optional LPS discovery retained, but HDB agency verification is mandatory."""
-    t = title.lower()
-    return 'lps' in t and any(kw in t for kw in LPS_TITLE_MUST_HAVE)
+    return detect_term_kind(title) == 'lps' and title_matches_term(title)
+
+def classify_tender(title):
+    if title_matches_term(title):
+        return 'term_contract'
+    if title_matches_building(title):
+        return 'building_works'
+    return None
 
 def matches_hdb(tender, detail_text=''):
     """Do not accept projects from non-HDB agencies or unspecified agencies."""
@@ -448,7 +480,7 @@ def matches_hdb(tender, detail_text=''):
             tender['agency'] = detail_m.group(1)
         else:
             return False
-    return title_matches(tender.get('title', '')) or is_lps(tender.get('title',''))
+    return classify_tender(tender.get('title', '')) is not None
 
 # ── Scraper ───────────────────────────────────────────────────────────────────
 
@@ -520,6 +552,24 @@ class GeBIZScraper:
                  open_m.group(1) if open_m else "?",
                  closed_m.group(1) if closed_m else "?")
 
+    def search_term_query(self, query):
+        """Run a search that is intended to capture HDB term contracts."""
+        log.info("Searching term contract query: '%s'", query)
+        self.page.goto(GEBIZ_HOME, wait_until="networkidle")
+        time.sleep(2)
+        self.page.wait_for_selector('input[id$="searchBar_INPUT-SEARCH"]', timeout=10000)
+        self.page.fill('input[id$="searchBar_INPUT-SEARCH"]', query)
+        time.sleep(0.3)
+        self.page.click('input[value="Go"]')
+        self.page.wait_for_load_state("networkidle")
+        time.sleep(2)
+        html = self.page.content()
+        open_m   = re.search(r'value="Open\s*\((\d+)\)"', html)
+        closed_m = re.search(r'value="Closed\s*\((\d+)\)"', html)
+        log.info("Term Results [%s] — Open:%s Closed:%s", query,
+                 open_m.group(1) if open_m else "?",
+                 closed_m.group(1) if closed_m else "?")
+
     def scrape_open(self):
         log.info("Scraping Open tab...")
         html = self.page.content()
@@ -578,8 +628,10 @@ class GeBIZScraper:
         ):
             href, doc_code, title_html = m.group(1), m.group(2), m.group(3)
             title = clean(title_html)
-            if len(title) < 5 or not (title_matches(title) or is_lps(title)):
+            contract_category = classify_tender(title)
+            if len(title) < 5 or not contract_category:
                 continue
+            term_kind = detect_term_kind(title)
             doc_idx  = html.find('docCode=' + doc_code)
             # A cancelled tender is still listed under GeBIZ's "Closed" search tab.
             # Inspect THIS result only; never use the whole page (other cards may
@@ -590,7 +642,7 @@ class GeBIZScraper:
             is_cancelled = bool(re.search(r'\bCANCELLED\b', card_text, re.I))
             block    = clean(html[max(0, doc_idx-200): doc_idx+2500])
             agency_m = re.search(r'Agency\s+(.+?)\s+(?:Published|Procurement)', block)
-            tender_type = "lps" if is_lps(title) else "building_works"
+            tender_type = term_kind if contract_category == 'term_contract' and term_kind else contract_category
             results[doc_code] = {
                 "title":        title,
                 "doc_no":       doc_code,
@@ -600,8 +652,10 @@ class GeBIZScraper:
                 "agency":       agency_m.group(1).strip() if agency_m else "",
                 "url":          "https://www.gebiz.gov.sg" + href,
                 "tender_type":  tender_type,
+                "contract_category": contract_category,
+                "term_kind":    term_kind,
             }
-            log.info("  [%s][%s] %s", "CANCELLED" if is_cancelled else status, tender_type.upper(), title[:65])
+            log.info("  [%s][%s/%s] %s", "CANCELLED" if is_cancelled else status, contract_category.upper(), str(tender_type).upper(), title[:65])
         return results
 
     # ── Verify page title matches expected tender ──────────────────────────────
@@ -615,13 +669,13 @@ class GeBIZScraper:
         page_title_m = re.search(r'PART\s+A\s*:\s*([A-Z\s\(\),;:\.\-\d]+?)(?:PART\s+B|layout_)', text)
         if page_title_m:
             page_title = page_title_m.group(0).strip()
-            if not (title_matches(page_title) or is_lps(page_title)):
+            if not classify_tender(page_title):
                 log.warning("  Title mismatch for %s — page shows: %s",
                             tender["doc_no"], page_title[:80])
                 return False
         else:
             # LPS tenders may not have "PART A" — just check the raw title_matches
-            if not (title_matches(tender.get("title", "")) or is_lps(tender.get("title", ""))):
+            if not classify_tender(tender.get("title", "")):
                 return False
         return True
 
@@ -1097,13 +1151,15 @@ def run_check():
         du_closed = scraper.scrape_closed()
         open_items.update(du_open)
         closed_items.update(du_closed)
-        # ── Search 3: LPS ──
-        scraper.search_lps()
-        lps_open   = scraper.scrape_open()
-        lps_closed = scraper.scrape_closed()
-        open_items.update(lps_open)
-        closed_items.update(lps_closed)
-        log.info("Combined: %d open, %d closed (incl. DU + LPS)", len(open_items), len(closed_items))
+        # ── Search 3: Term contracts (multi-query) ──
+        term_open, term_closed = {}, {}
+        for query in TERM_CONTRACT_SEARCH_TERMS:
+            scraper.search_term_query(query)
+            term_open.update(scraper.scrape_open())
+            term_closed.update(scraper.scrape_closed())
+        open_items.update(term_open)
+        closed_items.update(term_closed)
+        log.info("Combined: %d open, %d closed (incl. DU + term contracts)", len(open_items), len(closed_items))
     except Exception as e:
         log.error("Scrape error: %s", e)
         scraper.stop()
