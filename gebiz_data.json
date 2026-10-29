@@ -699,7 +699,8 @@
       "du_count": 711,
       "project_codes": [
         "GY"
-      ]
+      ],
+      "prices_withheld_pending_award": false
     },
     {
       "title": "PART A: BUILDING WORKS AT PROJECT CM-CN (TOTAL: 1,890 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
@@ -1141,7 +1142,8 @@
       "du_count": 1890,
       "project_codes": [
         "CM-CN"
-      ]
+      ],
+      "prices_withheld_pending_award": false
     },
     {
       "title": "PART A: BUILDING WORKS AT PROJECT DU (TOTAL: 1,695 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
@@ -1583,7 +1585,8 @@
       "du_count": 1695,
       "project_codes": [
         "DU"
-      ]
+      ],
+      "prices_withheld_pending_award": false
     },
     {
       "title": "PART A : BUILDING WORKS AT PROJECT BV (TOTAL: 438 DWELLING UNITS ); PART B : CONTINGENCY WORKS",
@@ -1981,7 +1984,8 @@
       "du_count": 438,
       "project_codes": [
         "BV"
-      ]
+      ],
+      "prices_withheld_pending_award": false
     },
     {
       "title": "PROJ1: PT A:BLDG WORKS AT PROJECT DD(TOTAL:1,206 DUS ) PT B:CONTINGENCY WORKS PROJ2: PT A:BLDG WORKS AT PROJECT DO(TOTAL:366 DUS )PT B:CONTINGENCY WORKS",
@@ -3710,12 +3714,59 @@
       "hdb_verified": true,
       "requires_option_b": false,
       "respondents_expected": 5,
-      "respondents_complete": false,
-      "two_envelope": false,
+      "respondents_complete": true,
+      "two_envelope": true,
       "under_evaluation": true,
-      "respondents": [],
+      "respondents": [
+        {
+          "name": "HL BUILDING MATERIALS PTE. LTD.",
+          "shortlisted": null,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": null,
+          "price_pending": true
+        },
+        {
+          "name": "INTEGRATED PRECAST SOLUTIONS PTE. LTD.",
+          "shortlisted": null,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": null,
+          "price_pending": true
+        },
+        {
+          "name": "PRECAST CONCRETE PTE. LTD.",
+          "shortlisted": null,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": null,
+          "price_pending": true
+        },
+        {
+          "name": "SUNWAY CONCRETE PRODUCTS (S) PTE LTD",
+          "shortlisted": null,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": null,
+          "price_pending": true
+        },
+        {
+          "name": "SYSCON PTE. LTD.",
+          "shortlisted": null,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": null,
+          "price_pending": true
+        }
+      ],
       "added": "29 Oct 2026, 15:29",
-      "project_codes": []
+      "project_codes": [],
+      "prices_withheld_pending_award": true
     },
     {
       "title": "TENDER FOR TERM CONTRACT FOR THE PRODUCTION, SUPPLY AND DELIVERY OF PRECAST PREFABRICATED BATHROOM UNIT (PBU) TO VARIOUS HDB BUILDING SITES (BATCH 1)",
@@ -3731,16 +3782,63 @@
       "hdb_verified": true,
       "requires_option_b": false,
       "respondents_expected": 5,
-      "respondents_complete": false,
-      "two_envelope": false,
+      "respondents_complete": true,
+      "two_envelope": true,
       "under_evaluation": true,
-      "respondents": [],
+      "respondents": [
+        {
+          "name": "HL BUILDING MATERIALS PTE. LTD.",
+          "shortlisted": null,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": null,
+          "price_pending": true
+        },
+        {
+          "name": "INTEGRATED PRECAST SOLUTIONS PTE. LTD.",
+          "shortlisted": null,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": null,
+          "price_pending": true
+        },
+        {
+          "name": "PRECAST CONCRETE PTE. LTD.",
+          "shortlisted": null,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": null,
+          "price_pending": true
+        },
+        {
+          "name": "SUNWAY CONCRETE PRODUCTS (S) PTE LTD",
+          "shortlisted": null,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": null,
+          "price_pending": true
+        },
+        {
+          "name": "SYSCON PTE. LTD.",
+          "shortlisted": null,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": null,
+          "price_pending": true
+        }
+      ],
       "added": "29 Oct 2026, 15:29",
-      "project_codes": []
+      "project_codes": [],
+      "prices_withheld_pending_award": true
     }
   ],
-  "last_updated": "29 Oct 2026, 15:44:07",
-  "run_count": 23,
+  "last_updated": "29 Oct 2026, 16:24:21",
+  "run_count": 24,
   "cancelled": [
     {
       "title": "PROJECT 1: BUILDING WORKS AT PROJECT EH (TOTAL: 834 DWELLING UNITS ); PROJECT 2: ROAD IMPROVEMENT AND INFRASTRUCTURE WORKS AT PROJECT EH",
