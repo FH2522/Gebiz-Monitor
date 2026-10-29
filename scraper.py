@@ -845,12 +845,24 @@ class GeBIZScraper:
             html2 = self.page.content()
             text2 = clean(html2)
             respondents = self._parse_respondents(html2, text2, tender['doc_no'])
+            # GeBIZ may suppress every price while keeping the names visible.
+            tender['prices_withheld_pending_award'] = bool(re.search(
+                r'two\s+envelope\s+tender.*?prices?\s+of\s+shortlisted\s+suppliers?.*?'
+                r'(?:after\s+the\s+award|after\s+award)',
+                text2, re.I | re.S))
+            if tender['prices_withheld_pending_award']:
+                tender['two_envelope'] = True
+                log.info('  TWO_ENVELOPE_NAMES_ONLY %s: %d companies; price publication pending award',
+                         tender['doc_no'], len(respondents))
 
             # Some templates only show ONE expanded supplier at a time. Capture
             # a snapshot after EACH click; do not wait until the last click,
             # which could hide previously opened companies' Item tables.
-            missing = [r['name'] for r in respondents
-                       if r.get('shortlisted') is not False and not r.get('bid_items')]
+            # Do not waste clicks trying to reveal bid prices that GeBIZ
+            # explicitly withholds during two-envelope evaluation.
+            missing = [] if tender.get('prices_withheld_pending_award') else [
+                r['name'] for r in respondents
+                if r.get('shortlisted') is not False and not r.get('bid_items')]
             collected = {re.sub(r'[^A-Z0-9]', '', r['name'].upper()): r
                          for r in respondents}
             clicked_suppliers = 0
@@ -926,7 +938,8 @@ class GeBIZScraper:
                             tender['doc_no'], len(respondents), tender['respondents_expected'])
             log.info("  Respondents parsed: %d", len(respondents))
 
-            tender['two_envelope'] = bool(re.search(r'Two Envelope Bidding\s+Yes\b',text,re.I))
+            tender['two_envelope'] = (tender.get('prices_withheld_pending_award', False) or
+                                      bool(re.search(r'Two Envelope Bidding\s+Yes\b',text,re.I)))
             # Only an actual awarded record can justify Awarded classification.
             award_button = re.search(r'value="(Award\s*\(\d+\))"',html2,re.I)
             if award_button:
@@ -961,7 +974,14 @@ class GeBIZScraper:
         # other templates explicitly divide shortlisted/non-shortlisted firms.
         has_shortlist_headings = any(re.match(r'^(?:NOT\s+)?SHORTLISTED\s+SUPPLIER', s, re.I)
                                      for s in chunks)
-        shortlisted = None if has_shortlist_headings else True
+        # During two-envelope evaluation, all supplier names are visible but
+        # prices are deliberately withheld until award. This is NOT a parsing
+        # failure and absence of price does NOT imply 'not shortlisted'.
+        evaluation_notice = bool(re.search(
+            r'two\s+envelope\s+tender.*?prices?\s+of\s+shortlisted\s+suppliers?.*?'
+            r'(?:after\s+the\s+award|after\s+award)',
+            text, re.I | re.S))
+        shortlisted = None if has_shortlist_headings or evaluation_notice else True
         firm_end = re.compile(
             r'(?:PTE\.?\s*LTD\.?|PRIVATE\s+LIMITED|LTD\.?|LLP|'
             r'\(SINGAPORE\s+BRANCH\))\s*$', re.I)
@@ -982,8 +1002,8 @@ class GeBIZScraper:
             if re.match(r'^SHORTLISTED\s+SUPPLIER',c,re.I):
                 shortlisted=True
                 continue
-            if shortlisted is None:
-                continue
+            # Shortlist status can be unknown on an evaluation page; this
+            # must not prevent us from collecting the company names.
             if re.match(r'^(?:Back to Search Results|Government Electronic Business|Supported browsers)',c,re.I):
                 break
             m=embedded.match(c)
@@ -996,11 +1016,16 @@ class GeBIZScraper:
             a=amount.match(following)
             if a:
                 headings.append((i,i+2,c,float(a.group(1).replace(',','')),shortlisted))
-            elif shortlisted is False and (not following or
+            elif (evaluation_notice or shortlisted is False) and (
+                    not following or
                     re.match(r'^(?:Expand|Collapse|No\. of Companies|Consortium|'
-                             r'NOT\s+SHORTLISTED|SHORTLISTED)',following,re.I) or
+                             r'NOT\s+SHORTLISTED|SHORTLISTED|Back to Search Results)',
+                             following,re.I) or
                     looks_like_company(following)):
-                headings.append((i,i+1,c,None,False))
+                # Two-envelope under evaluation: headings have NO amounts.
+                # Keep ALL suppliers with price_pending=True, as the website
+                # shows them. For NOT SHORTLISTED keep the explicit False flag.
+                headings.append((i,i+1,c,None,shortlisted))
         result=[]
         seen=set()
         for index,(begin,heading_end,name,total,is_shortlisted) in enumerate(headings):
@@ -1044,7 +1069,9 @@ class GeBIZScraper:
             result.append({'name':name,'shortlisted':is_shortlisted,
                            'bid_items':bid_items,'opt_a':legacy.get('A'),
                            'opt_b':legacy.get('B'),'total_price':total,
-                           'price_pending':is_shortlisted and not bool(bid_items)})
+                           'price_pending':(total is None and not bid_items and
+                                            is_shortlisted is not False) or
+                                           (is_shortlisted is True and not bool(bid_items))})
         result.sort(key=lambda r: (r['shortlisted'] is False,
                                    r['total_price'] if r['total_price'] is not None else float('inf')))
         bid_count=sum(len(r['bid_items']) for r in result)
@@ -1358,7 +1385,7 @@ def run_check():
                     e['respondents_complete'] = (len(e.get('respondents',[])) == int(e.get('respondents_expected') or len(e.get('respondents',[]))))
 
                     # Sync state flags set by get_respondents onto stored entry
-                    for flag in ("two_envelope", "under_evaluation", "awarded_to", "awarded_value", "awarded_date", "awarded_items", "award_confirmed"):
+                    for flag in ("two_envelope", "under_evaluation", "prices_withheld_pending_award", "awarded_to", "awarded_value", "awarded_date", "awarded_items", "award_confirmed"):
                         if flag in t:
                             e[flag] = t[flag]
                         elif flag == "under_evaluation" and flag not in t and e.get(flag):
