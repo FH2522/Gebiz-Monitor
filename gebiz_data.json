@@ -80,6 +80,28 @@
       "project_codes": [
         "GB"
       ]
+    },
+    {
+      "title": "PROJ 1 PT A: BLDG WORKS AT PROJ DS (TOTAL: 235 DUS ) PT B: CONTINGENCY WORKS PROJ 2 PT A: BLDG WORKS AT PROJ DP (TOTAL: 1271 DUS ) PT B:CONTINGENY WORKS",
+      "doc_no": "HDB000ETT26000170",
+      "close_date": "17 Nov 2026 04:00PM",
+      "published": "23 Sep 2026 06:50PM",
+      "status": "Open",
+      "agency": "Housing and Development Board",
+      "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000170",
+      "tender_type": "building_works",
+      "respondents": [],
+      "added": "26 Oct 2026, 15:09",
+      "project_code": "DS",
+      "du_count": 235,
+      "requires_option_b": false,
+      "hdb_verified": true,
+      "project_codes": [
+        "DS",
+        "DP"
+      ],
+      "respondents_complete": true,
+      "under_evaluation": false
     }
   ],
   "closed": [
@@ -747,28 +769,6 @@
       ]
     },
     {
-      "title": "PROJ 1 PT A: BLDG WORKS AT PROJ DS (TOTAL: 235 DUS ) PT B: CONTINGENCY WORKS PROJ 2 PT A: BLDG WORKS AT PROJ DP (TOTAL: 1271 DUS ) PT B:CONTINGENY WORKS",
-      "doc_no": "HDB000ETT26000170",
-      "close_date": "03 Nov 2026 04:00PM",
-      "published": "23 Sep 2026 06:50PM",
-      "status": "Closed",
-      "agency": "Housing and Development Board",
-      "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000170",
-      "tender_type": "building_works",
-      "respondents": [],
-      "added": "26 Oct 2026, 15:09",
-      "project_code": "DS",
-      "du_count": 235,
-      "requires_option_b": false,
-      "hdb_verified": true,
-      "project_codes": [
-        "DS",
-        "DP"
-      ],
-      "respondents_complete": true,
-      "under_evaluation": true
-    },
-    {
       "title": "PROJ1: PT A:BLDG WORKS AT PROJECT DD(TOTAL:1,206 DUS ) PT B:CONTINGENCY WORKS PROJ2: PT A:BLDG WORKS AT PROJECT DO(TOTAL:366 DUS )PT B:CONTINGENCY WORKS",
       "doc_no": "HDB000ETT26000066",
       "close_date": "30 Jul 2026 04:00PM",
@@ -1374,8 +1374,8 @@
       ]
     }
   ],
-  "last_updated": "29 Oct 2026, 09:32:55",
-  "run_count": 19,
+  "last_updated": "29 Oct 2026, 14:27:14",
+  "run_count": 20,
   "cancelled": [
     {
       "title": "PROJECT 1: BUILDING WORKS AT PROJECT EH (TOTAL: 834 DWELLING UNITS ); PROJECT 2: ROAD IMPROVEMENT AND INFRASTRUCTURE WORKS AT PROJECT EH",
