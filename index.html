@@ -133,6 +133,12 @@
     letter-spacing: -0.1px;
   }
   .refresh-btn:hover { opacity: 0.8; }
+  .filter-select {
+    border:1px solid var(--border); background:var(--surface); color:var(--text);
+    border-radius:10px; padding:8px 12px; font-size:13px; font-weight:600;
+    margin-top:6px;
+  }
+  .filter-select:focus { outline:none; border-color:var(--accent); }
 
   /* ── Main layout ── */
   .main {
@@ -417,7 +423,9 @@
     color: var(--text);
     white-space: nowrap;
   }
-  .price-cell.is-lowest { color: var(--green); font-weight: 500; }
+  .price-cell.is-lowest, .price-cell.rank-1 { color: var(--green); font-weight: 600; }
+  .price-cell.rank-2 { color: #0f766e; font-weight: 600; }
+  .price-cell.rank-3 { color: #b45309; font-weight: 600; }
   .price-sum { color: var(--purple); }
 
   .opt-tag {
@@ -529,7 +537,11 @@
     <div class="logo-mark">GB</div>
     <div>
       <span class="logo-name">GeBIZ Monitor</span>
-      <span class="logo-sub">HDB · Building Works</span>
+      <span class="logo-sub" id="logo-sub">HDB · Building Works</span><br>
+      <select id="contract-category" class="filter-select" onchange="changeCategory(this.value)">
+        <option value="building_works">Building Works</option>
+        <option value="term_contract">Term Contract</option>
+      </select>
     </div>
   </div>
   <div class="hdr-right">
@@ -614,6 +626,34 @@
 </div>
 
 <script>
+const VIEW_CONFIG = {
+  building_works: {label:'HDB · Building Works'},
+  term_contract: {label:'HDB · Term Contract'}
+};
+let currentCategory = 'building_works';
+window.__lastData = null;
+
+function normalizeCategory(t) {
+  const cat = String(t && (t.contract_category || t.tender_category || t.contract_type || t.tender_type) || '').toLowerCase();
+  if (cat.includes('term')) return 'term_contract';
+  if (cat === 'lps') return 'term_contract';
+  const title = String((t && t.title) || '');
+  if (/term\s+contract/i.test(title) && /batch/i.test(title) && /(LPS|large\s+panel\s+slab|PHS|PBU|household\s+shelter|bathroom\s+unit)/i.test(title)) return 'term_contract';
+  return 'building_works';
+}
+
+function updateCategoryLabel() {
+  const label = VIEW_CONFIG[currentCategory] ? VIEW_CONFIG[currentCategory].label : 'HDB · Building Works';
+  const el = document.getElementById('logo-sub');
+  if (el) el.textContent = label;
+}
+
+function changeCategory(value) {
+  currentCategory = value || 'building_works';
+  updateCategoryLabel();
+  if (window.__lastData) renderAll(window.__lastData);
+}
+
 async function loadData() {
   let data = null;
   for (let attempt = 1; attempt <= 3; attempt++) {
@@ -623,6 +663,7 @@ async function loadData() {
       const text = await res.text();
       if (!text || text.trim().length < 10) throw new Error('empty');
       data = JSON.parse(text);
+      window.__lastData = data;
       break;
     } catch(e) {
       if (attempt < 3) { await new Promise(r => setTimeout(r, 500)); }
@@ -676,7 +717,8 @@ function renderAll(data) {
       byDoc.set(key, t);
     }
   }
-  const all = [...byDoc.values()];
+  updateCategoryLabel();
+  const all = [...byDoc.values()].filter(t => normalizeCategory(t) === currentCategory);
   const open = all.filter(t => !awardConfirmed(t) && isFutureClosing(t));
   const closed = all.filter(t => awardConfirmed(t) || !isFutureClosing(t));
   const nonAwarded = closed.filter(t => !awardConfirmed(t));
@@ -779,6 +821,28 @@ function projectCodes(title) {
     return [m[1].toUpperCase().replace(/\s*([-\/])\s*/g,'$1')];
   }))];
 }
+function rankLabel(rank) {
+  return rank===1 ? 'lowest' : rank===2 ? '2nd lowest' : rank===3 ? '3rd lowest' : '';
+}
+
+function buildColumnRanks(normalized, columns, projects) {
+  const out = {};
+  for (const {p,o} of columns) {
+    const values = normalized
+      .filter(r => r.shortlisted !== false)
+      .flatMap(r => r.bids.filter(b => String(b.project || (projects.length===1?projects[0]:'' )).toUpperCase()===p &&
+                                   String(b.option||'').replace(/\s/g,'').toUpperCase()===o)
+                        .map(b => Number(b.price)))
+      .filter(v => Number.isFinite(v));
+    const uniques = [...new Set(values)].sort((a,b)=>a-b).slice(0,3);
+    out[p+'|'+o] = {
+      lowest: uniques.length ? uniques[0] : null,
+      ranks: Object.fromEntries(uniques.map((v,i)=>[String(v), i+1])),
+      top3: uniques
+    };
+  }
+  return out;
+}
 function renderClosedCard(t) {
   const respondents = Array.isArray(t.respondents) ? t.respondents : [];
   const awards = Array.isArray(t.awarded_items) ? t.awarded_items : [];
@@ -806,13 +870,7 @@ function renderClosedCard(t) {
   const columns=[];
   const order=[...new Set([...projects,...explicit.keys()])];
   for(const p of order) for(const o of [...(explicit.get(p)||[])].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}))) columns.push({p,o});
-  const minima={};
-  for(const {p,o} of columns) {
-    const prices=normalized.filter(r=>r.shortlisted!==false).flatMap(r=>r.bids.filter(b =>
-      String(b.project||(projects.length===1?projects[0]:'')).toUpperCase()===p &&
-      String(b.option||'').replace(/\s/g,'').toUpperCase()===o).map(b=>Number(b.price)));
-    minima[p+'|'+o]=prices.length?Math.min(...prices):null;
-  }
+  const columnRanks = buildColumnRanks(normalized, columns, projects);
   const expected=t.respondents_expected;
   const incomplete=expected != null && respondents.length < Number(expected);
   const note=incomplete?'<div class="summary-box" style="color:#a45b00">⚠ '+respondents.length+' / '+Number(expected)+' respondents captured — retry needed.</div>':'';
@@ -830,8 +888,11 @@ function renderClosedCard(t) {
       const b=r.bids.find(v=>String(v.project||(projects.length===1?projects[0]:'')).toUpperCase()===c.p &&
          String(v.option||'').replace(/\s/g,'').toUpperCase()===c.o);
       const price=b?Number(b.price):null;
-      const low=price!==null && price===minima[c.p+'|'+c.o] && r.shortlisted!==false;
-      return '<td class="price-cell'+(low?' is-lowest':'')+'">'+(price===null?'—':fmtp(price)+(low?' ↓ lowest':''))+'</td>';
+      const rank = (price!==null && r.shortlisted!==false && columnRanks[c.p+'|'+c.o]) ? columnRanks[c.p+'|'+c.o].ranks[String(price)] : null;
+      const low=rank===1;
+      const rankClass = rank ? ' rank-'+rank : '';
+      const rankText = rank ? (' ↓ ' + rankLabel(rank)) : '';
+      return '<td class="price-cell'+(low?' is-lowest':'')+rankClass+'">'+(price===null?'—':fmtp(price)+rankText)+'</td>';
     }).join('');
     const tags=(r.shortlisted===false?' <span class="badge">NOT SHORTLISTED</span>':'')+
       (t.awarded_to && String(r.name||'').toUpperCase()===String(t.awarded_to).toUpperCase()?' <span class="award-tag">AWARDED</span>':'');
@@ -848,14 +909,15 @@ function renderClosedCard(t) {
   // to different contractors, so the sum is an indicative comparison only.
   const projectBest = order.map(p => {
     const available = columns.filter(c=>c.p===p).map(c => ({
-      option:c.o, price:minima[c.p+'|'+c.o]
+      option:c.o, price:columnRanks[c.p+'|'+c.o] ? columnRanks[c.p+'|'+c.o].lowest : null,
+      top3:columnRanks[c.p+'|'+c.o] ? columnRanks[c.p+'|'+c.o].top3 : []
     })).filter(v=>v.price != null && Number.isFinite(v.price));
     available.sort((a,b)=>a.price-b.price);
     return {project:p, options:available, best:available[0]||null};
   });
-  const lowest=columns.length?'<div class="summary-box"><div class="summary-label">Lowest bid in each project / option</div>'+ 
+  const lowest=columns.length?'<div class="summary-box"><div class="summary-label">Top 3 lowest bid prices in each project / option</div>'+ 
     projectBest.map(p=>'<div style="margin-top:8px"><strong>Project '+escapeHtml(p.project)+'</strong> · '+
-      (p.options.length ? p.options.map(o=>'Option '+escapeHtml(o.option)+': '+fmtp(o.price)).join(' &nbsp;·&nbsp; ') : 'Item prices pending')+
+      (p.options.length ? p.options.map(o=>'Option '+escapeHtml(o.option)+': '+(o.top3.length ? o.top3.map((v,i)=>fmtp(v)+' ('+rankLabel(i+1)+')').join(' · ') : 'pending')).join(' &nbsp;|&nbsp; ') : 'Item prices pending')+
       (p.best ? '<div style="color:var(--green)">↓ Lowest published option for '+escapeHtml(p.project)+': '+
                escapeHtml(p.best.option)+' · '+fmtp(p.best.price)+'</div>' : '')+'</div>').join('')+'</div>':'';
   const allProjectMinimaAvailable=projectBest.length>1 && projectBest.every(p=>p.best);
@@ -932,6 +994,7 @@ function switchTab(name) {
 }
 
 // Fetch once when the page opens. After that, only the Refresh button fetches again.
+updateCategoryLabel();
 loadData();
 </script>
 </body>
