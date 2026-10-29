@@ -3695,10 +3695,52 @@
         "DT"
       ],
       "item_prices_complete": true
+    },
+    {
+      "title": "TENDER FOR TERM CONTRACT FOR THE PRODUCTION, SUPPLY AND DELIVERY OF PRECAST PREFABRICATED BATHROOM UNIT (PBU) TO VARIOUS HDB BUILDING SITES (BATCH 2)",
+      "doc_no": "HDB000ETT26000151",
+      "close_date": "26 Oct 2026 04:00PM",
+      "published": "28 Aug 2026 01:35PM",
+      "status": "Closed",
+      "agency": "Housing and Development Board",
+      "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000151",
+      "tender_type": "pbu",
+      "contract_category": "term_contract",
+      "term_kind": "pbu",
+      "hdb_verified": true,
+      "requires_option_b": false,
+      "respondents_expected": 5,
+      "respondents_complete": false,
+      "two_envelope": false,
+      "under_evaluation": true,
+      "respondents": [],
+      "added": "29 Oct 2026, 15:29",
+      "project_codes": []
+    },
+    {
+      "title": "TENDER FOR TERM CONTRACT FOR THE PRODUCTION, SUPPLY AND DELIVERY OF PRECAST PREFABRICATED BATHROOM UNIT (PBU) TO VARIOUS HDB BUILDING SITES (BATCH 1)",
+      "doc_no": "HDB000ETT26000152",
+      "close_date": "26 Oct 2026 04:00PM",
+      "published": "28 Aug 2026 10:20AM",
+      "status": "Closed",
+      "agency": "Housing and Development Board",
+      "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000152",
+      "tender_type": "pbu",
+      "contract_category": "term_contract",
+      "term_kind": "pbu",
+      "hdb_verified": true,
+      "requires_option_b": false,
+      "respondents_expected": 5,
+      "respondents_complete": false,
+      "two_envelope": false,
+      "under_evaluation": true,
+      "respondents": [],
+      "added": "29 Oct 2026, 15:29",
+      "project_codes": []
     }
   ],
-  "last_updated": "29 Oct 2026, 15:00:07",
-  "run_count": 21,
+  "last_updated": "29 Oct 2026, 15:29:30",
+  "run_count": 22,
   "cancelled": [
     {
       "title": "PROJECT 1: BUILDING WORKS AT PROJECT EH (TOTAL: 834 DWELLING UNITS ); PROJECT 2: ROAD IMPROVEMENT AND INFRASTRUCTURE WORKS AT PROJECT EH",
@@ -3708,7 +3750,9 @@
       "status": "Cancelled",
       "agency": "Housing and Development Board",
       "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000173",
-      "tender_type": "building_works"
+      "tender_type": "building_works",
+      "contract_category": "building_works",
+      "term_kind": null
     }
   ]
 }
