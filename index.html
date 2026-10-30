@@ -927,7 +927,9 @@ function bidRows(r) {
   return Array.isArray(r.bid_items) ? r.bid_items.filter(b => b && b.price != null) : [];
 }
 function projectCodes(title) {
-  const matches = [...String(title||'').matchAll(/\bPROJ(?:ECT)?\.?\s*[:#-]?\s*([A-Z]{1,5}(?:\s*[-/]\s*[A-Z]{1,5})?)\b/gi)];
+  // PROJECT is a whole word; never interpret it as PROJ + fake code ECT.
+  // PROJECT 1 / PROJ 2 are lot labels, not project codes.
+  const matches = [...String(title||'').matchAll(/\b(?:PROJECT|PROJ)\b\.?(?:\s*[:#-]\s*|\s+)([A-Z]{1,5}(?:\s*[-/]\s*[A-Z]{1,5})?)\b/gi)];
   return [...new Set(matches.flatMap(m => {
     // Hyphenated code like CM-CN can be a single project designation.
     return [m[1].toUpperCase().replace(/\s*([-\/])\s*/g,'$1')];
@@ -961,7 +963,13 @@ function renderClosedCard(t) {
   const awarded = t.status === 'Awarded' || !!t.award_confirmed;
   const projects = projectCodes(t.title);
   const explicit = new Map();
-  const normalized = respondents.map(r => ({...r, bids:bidRows(r)}));
+  // Validate persisted Item prices against project codes explicitly present
+  // in the tender title. A legacy scraper accidentally called PROJECT->ECT;
+  // reject these duplicate columns even before the next JSON scrape runs.
+  const normalized = respondents.map(r => ({...r, bids:bidRows(r).filter(b => {
+    const code = String(b.project || '').toUpperCase().replace(/\s/g,'');
+    return !projects.length || !code || projects.includes(code);
+  })}));
   // An option must be linked to the project mentioned inside that Item.
   // Legacy A/B belongs to a single project only, never inferred for multiple projects.
   normalized.forEach(r => {
