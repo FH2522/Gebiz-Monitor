@@ -3,17 +3,16 @@
     {
       "title": "PROJECT 1: BUILDING WORKS AT PROJECT EH (TOTAL: 834 DWELLING UNITS ); PROJECT 2: ROAD IMPROVEMENT AND INFRASTRUCTURE WORKS AT PROJECT EH",
       "doc_no": "HDB000ETT26000175",
-      "close_date": "06 Nov 2026 04:00PM",
+      "close_date": "20 Nov 2026 04:00PM",
       "published": "30 Sep 2026 04:50PM",
       "status": "Open",
       "agency": "Housing and Development Board",
       "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000175",
       "tender_type": "building_works",
       "added": "26 Oct 2026, 15:07",
-      "project_code": "ECT",
+      "project_code": "EH",
       "du_count": 834,
       "project_codes": [
-        "ECT",
         "EH"
       ]
     },
@@ -722,13 +721,13 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "A",
               "price": 370980000.0
             },
             {
               "item_no": 2,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "B",
               "price": 370980000.0
             }
@@ -744,13 +743,13 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "A",
               "price": 377890000.0
             },
             {
               "item_no": 2,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "B",
               "price": 377890000.0
             }
@@ -766,13 +765,13 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "A",
               "price": 398608000.0
             },
             {
               "item_no": 2,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "B",
               "price": 403159000.0
             }
@@ -788,13 +787,13 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "A",
               "price": 409000000.0
             },
             {
               "item_no": 2,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "B",
               "price": 409000000.0
             }
@@ -810,13 +809,13 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "A",
               "price": 412500000.0
             },
             {
               "item_no": 2,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "B",
               "price": 416500000.0
             }
@@ -832,13 +831,13 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "A",
               "price": 412500000.0
             },
             {
               "item_no": 2,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "B",
               "price": 416500000.0
             }
@@ -854,13 +853,13 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "A",
               "price": 412600000.0
             },
             {
               "item_no": 2,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "B",
               "price": 417600000.0
             }
@@ -876,13 +875,13 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "A",
               "price": 419800000.0
             },
             {
               "item_no": 2,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "B",
               "price": 419800000.0
             }
@@ -898,13 +897,13 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "A",
               "price": 421553300.0
             },
             {
               "item_no": 2,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "B",
               "price": 425553300.0
             }
@@ -920,13 +919,13 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "A",
               "price": 425250000.0
             },
             {
               "item_no": 2,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "B",
               "price": 429450000.0
             }
@@ -942,13 +941,13 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "A",
               "price": 426380000.0
             },
             {
               "item_no": 2,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "B",
               "price": 430380000.0
             }
@@ -964,13 +963,13 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "A",
               "price": 426500000.0
             },
             {
               "item_no": 2,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "B",
               "price": 430000000.0
             }
@@ -986,13 +985,13 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "A",
               "price": 430000000.0
             },
             {
               "item_no": 2,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "B",
               "price": 433000000.0
             }
@@ -1008,13 +1007,13 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "A",
               "price": 432600000.0
             },
             {
               "item_no": 2,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "B",
               "price": 435600000.0
             }
@@ -1030,13 +1029,13 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "A",
               "price": 443465000.0
             },
             {
               "item_no": 2,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "B",
               "price": 445965000.0
             }
@@ -1052,13 +1051,13 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "A",
               "price": 445442000.0
             },
             {
               "item_no": 2,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "B",
               "price": 450310000.0
             }
@@ -1074,13 +1073,13 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "A",
               "price": 445000000.0
             },
             {
               "item_no": 2,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "B",
               "price": 450700000.0
             }
@@ -1096,13 +1095,13 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "A",
               "price": 463000000.0
             },
             {
               "item_no": 2,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "B",
               "price": 468000000.0
             }
@@ -1118,13 +1117,13 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "A",
               "price": 466000000.0
             },
             {
               "item_no": 2,
-              "project": "ECT",
+              "project": "CM-CN",
               "option": "B",
               "price": 470100000.0
             }
@@ -2444,30 +2443,6 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
-              "option": "A",
-              "price": 192110000.0
-            },
-            {
-              "item_no": 2,
-              "project": "ECT",
-              "option": "B",
-              "price": 192280000.0
-            },
-            {
-              "item_no": 3,
-              "project": "ECT",
-              "option": "A",
-              "price": 62480000.0
-            },
-            {
-              "item_no": 4,
-              "project": "ECT",
-              "option": "B",
-              "price": 63349000.0
-            },
-            {
-              "item_no": 1,
               "project": "EL",
               "option": "A",
               "price": 192110000,
@@ -2500,30 +2475,6 @@
           "name": "CHINA COMMUNICATIONS CONSTRUCTION COMPANY LIMITED (SINGAPORE BRANCH)",
           "shortlisted": true,
           "bid_items": [
-            {
-              "item_no": 1,
-              "project": "ECT",
-              "option": "A",
-              "price": 197151045.0
-            },
-            {
-              "item_no": 2,
-              "project": "ECT",
-              "option": "B",
-              "price": 199260145.0
-            },
-            {
-              "item_no": 3,
-              "project": "ECT",
-              "option": "A",
-              "price": 62379606.0
-            },
-            {
-              "item_no": 4,
-              "project": "ECT",
-              "option": "B",
-              "price": 62823506.0
-            },
             {
               "item_no": 1,
               "project": "EL",
@@ -2568,30 +2519,6 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
-              "option": "A",
-              "price": 202000000.0
-            },
-            {
-              "item_no": 2,
-              "project": "ECT",
-              "option": "B",
-              "price": 203000000.0
-            },
-            {
-              "item_no": 3,
-              "project": "ECT",
-              "option": "A",
-              "price": 62500000.0
-            },
-            {
-              "item_no": 4,
-              "project": "ECT",
-              "option": "B",
-              "price": 63000000.0
-            },
-            {
-              "item_no": 1,
               "project": "EL",
               "option": "A",
               "price": 202000000,
@@ -2628,30 +2555,6 @@
           "price_pending": false,
           "shortlisted": true,
           "bid_items": [
-            {
-              "item_no": 1,
-              "project": "ECT",
-              "option": "A",
-              "price": 206000000.0
-            },
-            {
-              "item_no": 2,
-              "project": "ECT",
-              "option": "B",
-              "price": 207610000.0
-            },
-            {
-              "item_no": 3,
-              "project": "ECT",
-              "option": "A",
-              "price": 65770000.0
-            },
-            {
-              "item_no": 4,
-              "project": "ECT",
-              "option": "B",
-              "price": 66270000.0
-            },
             {
               "item_no": 1,
               "project": "EL",
@@ -2692,30 +2595,6 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
-              "option": "A",
-              "price": 205478000.0
-            },
-            {
-              "item_no": 2,
-              "project": "ECT",
-              "option": "B",
-              "price": 208988000.0
-            },
-            {
-              "item_no": 3,
-              "project": "ECT",
-              "option": "A",
-              "price": 70000000.0
-            },
-            {
-              "item_no": 4,
-              "project": "ECT",
-              "option": "B",
-              "price": 71000000.0
-            },
-            {
-              "item_no": 1,
               "project": "EL",
               "option": "A",
               "price": 205478000,
@@ -2752,30 +2631,6 @@
           "price_pending": false,
           "shortlisted": true,
           "bid_items": [
-            {
-              "item_no": 1,
-              "project": "ECT",
-              "option": "A",
-              "price": 211400000.0
-            },
-            {
-              "item_no": 2,
-              "project": "ECT",
-              "option": "B",
-              "price": 214400000.0
-            },
-            {
-              "item_no": 3,
-              "project": "ECT",
-              "option": "A",
-              "price": 70000000.0
-            },
-            {
-              "item_no": 4,
-              "project": "ECT",
-              "option": "B",
-              "price": 70300000.0
-            },
             {
               "item_no": 1,
               "project": "EL",
@@ -2816,30 +2671,6 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
-              "option": "A",
-              "price": 208500000.0
-            },
-            {
-              "item_no": 2,
-              "project": "ECT",
-              "option": "B",
-              "price": 210000000.0
-            },
-            {
-              "item_no": 3,
-              "project": "ECT",
-              "option": "A",
-              "price": 75500000.0
-            },
-            {
-              "item_no": 4,
-              "project": "ECT",
-              "option": "B",
-              "price": 76000000.0
-            },
-            {
-              "item_no": 1,
               "project": "EL",
               "option": "A",
               "price": 208500000,
@@ -2876,30 +2707,6 @@
           "price_pending": false,
           "shortlisted": true,
           "bid_items": [
-            {
-              "item_no": 1,
-              "project": "ECT",
-              "option": "A",
-              "price": 213900000.0
-            },
-            {
-              "item_no": 2,
-              "project": "ECT",
-              "option": "B",
-              "price": 213900000.0
-            },
-            {
-              "item_no": 3,
-              "project": "ECT",
-              "option": "A",
-              "price": 75000000.0
-            },
-            {
-              "item_no": 4,
-              "project": "ECT",
-              "option": "B",
-              "price": 75000000.0
-            },
             {
               "item_no": 1,
               "project": "EL",
@@ -2940,30 +2747,6 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
-              "option": "A",
-              "price": 220000000.0
-            },
-            {
-              "item_no": 2,
-              "project": "ECT",
-              "option": "B",
-              "price": 220000000.0
-            },
-            {
-              "item_no": 3,
-              "project": "ECT",
-              "option": "A",
-              "price": 70000000.0
-            },
-            {
-              "item_no": 4,
-              "project": "ECT",
-              "option": "B",
-              "price": 70000000.0
-            },
-            {
-              "item_no": 1,
               "project": "EL",
               "option": "A",
               "price": 220000000,
@@ -3000,30 +2783,6 @@
           "price_pending": false,
           "shortlisted": true,
           "bid_items": [
-            {
-              "item_no": 1,
-              "project": "ECT",
-              "option": "A",
-              "price": 213661000.0
-            },
-            {
-              "item_no": 2,
-              "project": "ECT",
-              "option": "B",
-              "price": 216961000.0
-            },
-            {
-              "item_no": 3,
-              "project": "ECT",
-              "option": "A",
-              "price": 74661000.0
-            },
-            {
-              "item_no": 4,
-              "project": "ECT",
-              "option": "B",
-              "price": 75381000.0
-            },
             {
               "item_no": 1,
               "project": "EL",
@@ -3064,30 +2823,6 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
-              "option": "A",
-              "price": 218600000.0
-            },
-            {
-              "item_no": 2,
-              "project": "ECT",
-              "option": "B",
-              "price": 219800000.0
-            },
-            {
-              "item_no": 3,
-              "project": "ECT",
-              "option": "A",
-              "price": 75600000.0
-            },
-            {
-              "item_no": 4,
-              "project": "ECT",
-              "option": "B",
-              "price": 76000000.0
-            },
-            {
-              "item_no": 1,
               "project": "EL",
               "option": "A",
               "price": 218600000,
@@ -3124,30 +2859,6 @@
           "price_pending": false,
           "shortlisted": true,
           "bid_items": [
-            {
-              "item_no": 1,
-              "project": "ECT",
-              "option": "A",
-              "price": 223000000.0
-            },
-            {
-              "item_no": 2,
-              "project": "ECT",
-              "option": "B",
-              "price": 226000000.0
-            },
-            {
-              "item_no": 3,
-              "project": "ECT",
-              "option": "A",
-              "price": 72000000.0
-            },
-            {
-              "item_no": 4,
-              "project": "ECT",
-              "option": "B",
-              "price": 72580000.0
-            },
             {
               "item_no": 1,
               "project": "EL",
@@ -3188,30 +2899,6 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
-              "option": "A",
-              "price": 220000000.0
-            },
-            {
-              "item_no": 2,
-              "project": "ECT",
-              "option": "B",
-              "price": 221100000.0
-            },
-            {
-              "item_no": 3,
-              "project": "ECT",
-              "option": "A",
-              "price": 81868000.0
-            },
-            {
-              "item_no": 4,
-              "project": "ECT",
-              "option": "B",
-              "price": 82335000.0
-            },
-            {
-              "item_no": 1,
               "project": "EL",
               "option": "A",
               "price": 220000000,
@@ -3248,30 +2935,6 @@
           "price_pending": false,
           "shortlisted": true,
           "bid_items": [
-            {
-              "item_no": 1,
-              "project": "ECT",
-              "option": "A",
-              "price": 222988000.0
-            },
-            {
-              "item_no": 2,
-              "project": "ECT",
-              "option": "B",
-              "price": 225988000.0
-            },
-            {
-              "item_no": 3,
-              "project": "ECT",
-              "option": "A",
-              "price": 79000000.0
-            },
-            {
-              "item_no": 4,
-              "project": "ECT",
-              "option": "B",
-              "price": 80000000.0
-            },
             {
               "item_no": 1,
               "project": "EL",
@@ -3312,30 +2975,6 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
-              "option": "A",
-              "price": 224288000.0
-            },
-            {
-              "item_no": 2,
-              "project": "ECT",
-              "option": "B",
-              "price": 227488000.0
-            },
-            {
-              "item_no": 3,
-              "project": "ECT",
-              "option": "A",
-              "price": 79400000.0
-            },
-            {
-              "item_no": 4,
-              "project": "ECT",
-              "option": "B",
-              "price": 80200000.0
-            },
-            {
-              "item_no": 1,
               "project": "EL",
               "option": "A",
               "price": 224288000,
@@ -3372,30 +3011,6 @@
           "price_pending": false,
           "shortlisted": true,
           "bid_items": [
-            {
-              "item_no": 1,
-              "project": "ECT",
-              "option": "A",
-              "price": 229000000.0
-            },
-            {
-              "item_no": 2,
-              "project": "ECT",
-              "option": "B",
-              "price": 230800000.0
-            },
-            {
-              "item_no": 3,
-              "project": "ECT",
-              "option": "A",
-              "price": 78900000.0
-            },
-            {
-              "item_no": 4,
-              "project": "ECT",
-              "option": "B",
-              "price": 79200000.0
-            },
             {
               "item_no": 1,
               "project": "EL",
@@ -3436,30 +3051,6 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
-              "option": "A",
-              "price": 226000000.0
-            },
-            {
-              "item_no": 2,
-              "project": "ECT",
-              "option": "B",
-              "price": 228000000.0
-            },
-            {
-              "item_no": 3,
-              "project": "ECT",
-              "option": "A",
-              "price": 84600000.0
-            },
-            {
-              "item_no": 4,
-              "project": "ECT",
-              "option": "B",
-              "price": 85500000.0
-            },
-            {
-              "item_no": 1,
               "project": "EL",
               "option": "A",
               "price": 226000000,
@@ -3496,30 +3087,6 @@
           "price_pending": false,
           "shortlisted": true,
           "bid_items": [
-            {
-              "item_no": 1,
-              "project": "ECT",
-              "option": "A",
-              "price": 237200000.0
-            },
-            {
-              "item_no": 2,
-              "project": "ECT",
-              "option": "B",
-              "price": 240300000.0
-            },
-            {
-              "item_no": 3,
-              "project": "ECT",
-              "option": "A",
-              "price": 74000000.0
-            },
-            {
-              "item_no": 4,
-              "project": "ECT",
-              "option": "B",
-              "price": 74700000.0
-            },
             {
               "item_no": 1,
               "project": "EL",
@@ -3560,30 +3127,6 @@
           "bid_items": [
             {
               "item_no": 1,
-              "project": "ECT",
-              "option": "A",
-              "price": 233600000.0
-            },
-            {
-              "item_no": 2,
-              "project": "ECT",
-              "option": "B",
-              "price": 235600000.0
-            },
-            {
-              "item_no": 3,
-              "project": "ECT",
-              "option": "A",
-              "price": 81600000.0
-            },
-            {
-              "item_no": 4,
-              "project": "ECT",
-              "option": "B",
-              "price": 82000000.0
-            },
-            {
-              "item_no": 1,
               "project": "EL",
               "option": "A",
               "price": 233600000,
@@ -3620,30 +3163,6 @@
           "price_pending": false,
           "shortlisted": true,
           "bid_items": [
-            {
-              "item_no": 1,
-              "project": "ECT",
-              "option": "A",
-              "price": 244000000.0
-            },
-            {
-              "item_no": 2,
-              "project": "ECT",
-              "option": "B",
-              "price": 246000000.0
-            },
-            {
-              "item_no": 3,
-              "project": "ECT",
-              "option": "A",
-              "price": 77000000.0
-            },
-            {
-              "item_no": 4,
-              "project": "ECT",
-              "option": "B",
-              "price": 77000000.0
-            },
             {
               "item_no": 1,
               "project": "EL",
@@ -3837,8 +3356,8 @@
       "prices_withheld_pending_award": true
     }
   ],
-  "last_updated": "30 Oct 2026, 08:10:08",
-  "run_count": 27,
+  "last_updated": "30 Oct 2026, 14:16:28",
+  "run_count": 28,
   "cancelled": [
     {
       "title": "PROJECT 1: BUILDING WORKS AT PROJECT EH (TOTAL: 834 DWELLING UNITS ); PROJECT 2: ROAD IMPROVEMENT AND INFRASTRUCTURE WORKS AT PROJECT EH",
