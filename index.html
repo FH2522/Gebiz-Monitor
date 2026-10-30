@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Dashboard build: PINNED_LIGHT_V2_20261029 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -407,7 +408,9 @@
   .resp-table tbody tr:hover td { background: #fafafa; }
 
   .row-num {
-    font-family: 'DM Mono', monospace;
+    font-family: 'DM Sans', Arial, sans-serif;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'zero' 0;
     font-size: 11px;
     color: var(--muted2);
     width: 36px;
@@ -417,16 +420,87 @@
   .company-cell.is-lowest { color: var(--green); }
   .company-cell.is-winner { color: var(--orange); }
 
+  /* Price typography: use an ordinary non-slashed zero, never bold.
+     !important guards against older generic table / highlight rules. */
+  .price-cell, .bid-table .price-cell, .price-cell *,
+  .bid-table .price-cell *, .rank-note {
+    font-family: Arial, Helvetica, sans-serif !important;
+    font-weight: 400 !important;
+    font-style: normal !important;
+    font-feature-settings: normal !important;
+    font-variant-numeric: normal !important;
+    font-variant-ligatures: none !important;
+    letter-spacing: normal;
+    text-shadow: none;
+    -webkit-font-smoothing: antialiased;
+  }
   .price-cell {
-    font-family: 'DM Mono', monospace;
     font-size: 12px;
     color: var(--text);
     white-space: nowrap;
   }
-  .price-cell.is-lowest, .price-cell.rank-1 { color: var(--green); font-weight: 600; }
-  .price-cell.rank-2 { color: #0f766e; font-weight: 600; }
-  .price-cell.rank-3 { color: #b45309; font-weight: 600; }
+  .price-cell.is-lowest, .price-cell.rank-1 { color: #188544; }
+  .price-cell.rank-2 { color: #0f766e; }
+  .price-cell.rank-3 { color: #b45309; }
+  .rank-note { font-size: 10px; opacity: .9; white-space: nowrap; }
   .price-sum { color: var(--purple); }
+
+  /* Pinned columns with JS scroll synchronization.
+     Table-cell sticky was inconsistent across the deployed browser versions.
+     The first two columns are translated horizontally by the scroller position;
+     all headings are translated vertically. Both are painted above scrolling cells. */
+  .bid-table-scroll {
+    max-height: min(72vh, 720px);
+    overflow: auto;
+    position: relative;
+    width: 100%;
+    overscroll-behavior: contain;
+    isolation: isolate;
+  }
+  .bid-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 100%;
+    width: max-content;
+  }
+  .bid-table thead th {
+    position: relative;
+    z-index: 5;
+    background: var(--surface2);
+    white-space: nowrap;
+    box-shadow: 0 1px 0 var(--border);
+  }
+  .bid-table th:nth-child(1), .bid-table td:nth-child(1) {
+    position: relative;
+    width: 52px;
+    min-width: 52px;
+    max-width: 52px;
+    z-index: 3;
+    background: var(--surface);
+  }
+  .bid-table th:nth-child(2), .bid-table td:nth-child(2) {
+    position: relative;
+    width: 272px;
+    min-width: 272px;
+    max-width: 272px;
+    z-index: 3;
+    background: var(--surface);
+    box-shadow: 1px 0 0 var(--border);
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .bid-table thead th:nth-child(1), .bid-table thead th:nth-child(2) {
+    z-index: 7;
+    background: var(--surface2);
+  }
+  .bid-table tbody tr:hover td:nth-child(1),
+  .bid-table tbody tr:hover td:nth-child(2) { background: #fafafa; }
+  .bid-table td.price-cell { min-width: 145px; }
+  @media (max-width: 600px) {
+    .bid-table th:nth-child(2), .bid-table td:nth-child(2) {
+      width: 180px; min-width: 180px; max-width: 180px;
+    }
+  }
 
   .opt-tag {
     font-family: 'DM Mono', monospace;
@@ -579,7 +653,7 @@
     <div class="scard s-total">
       <div class="slabel">Total Tracked</div>
       <div class="sval" id="cnt-total">—</div>
-      <div class="ssub">Building works</div>
+      <div class="ssub" id="stat-category-label">Building works</div>
     </div>
     <div class="scard s-time">
       <div class="slabel">Last Scraped</div>
@@ -628,7 +702,7 @@
 <script>
 const VIEW_CONFIG = {
   building_works: {label:'HDB · Building Works'},
-  term_contract: {label:'HDB · Term Contract'}
+  term_contract: {label:'HDB · Term Contract (LPS / PHS / PBU)'}
 };
 let currentCategory = 'building_works';
 window.__lastData = null;
@@ -646,6 +720,8 @@ function updateCategoryLabel() {
   const label = VIEW_CONFIG[currentCategory] ? VIEW_CONFIG[currentCategory].label : 'HDB · Building Works';
   const el = document.getElementById('logo-sub');
   if (el) el.textContent = label;
+  const statLabel = document.getElementById('stat-category-label');
+  if (statLabel) statLabel.textContent = currentCategory === 'term_contract' ? 'Term contracts' : 'Building works';
 }
 
 function changeCategory(value) {
@@ -773,6 +849,40 @@ function renderOpen(list) {
   }).join('');
 }
 
+// Keep the two identifying columns visible when scrolling horizontally, and
+// the option headers visible when scrolling vertically. Unlike table-cell
+// CSS sticky, this explicit sync works reliably with wide dynamic bid grids.
+function installPinnedBidTables(panel) {
+  if (!panel) return;
+  panel.querySelectorAll('.bid-table-scroll').forEach(scroller => {
+    if (scroller.dataset.pinnedReady === 'true') return;
+    scroller.dataset.pinnedReady = 'true';
+    const table = scroller.querySelector('.bid-table');
+    if (!table || !table.tHead) return;
+    const headers = Array.from(table.tHead.rows[0].cells);
+    const fixedRows = Array.from(table.tBodies[0].rows, tr => [tr.cells[0], tr.cells[1]]);
+    let scheduled = false;
+    const update = () => {
+      scheduled = false;
+      const x = scroller.scrollLeft;
+      const y = scroller.scrollTop;
+      headers.forEach((cell, index) => {
+        if (index < 2) cell.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+        else cell.style.transform = `translate3d(0, ${y}px, 0)`;
+      });
+      fixedRows.forEach(pair => pair.forEach(cell => {
+        if (cell) cell.style.transform = `translate3d(${x}px, 0, 0)`;
+      }));
+    };
+    scroller.addEventListener('scroll', () => {
+      if (scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(update);
+    }, {passive: true});
+    update();
+  });
+}
+
 // ── Awarded tenders ───────────────────────────────────────────────────────────
 function renderAwarded(list) {
   const panel = document.getElementById('awarded-panel');
@@ -788,6 +898,7 @@ function renderAwarded(list) {
     return parseDate(b.close_date) - parseDate(a.close_date);
   });
   panel.innerHTML = sorted.map(t => renderClosedCard(t)).join('');
+  installPinnedBidTables(panel);
 }
 
 // ── Closed tenders ────────────────────────────────────────────────────────────
@@ -805,6 +916,7 @@ function renderClosed(list) {
     return parseDate(b.close_date) - parseDate(a.close_date);
   });
   panel.innerHTML = sorted.map(t => renderClosedCard(t)).join('');
+  installPinnedBidTables(panel);
 }
 
 function escapeHtml(v) {
@@ -891,17 +1003,24 @@ function renderClosedCard(t) {
       const rank = (price!==null && r.shortlisted!==false && columnRanks[c.p+'|'+c.o]) ? columnRanks[c.p+'|'+c.o].ranks[String(price)] : null;
       const low=rank===1;
       const rankClass = rank ? ' rank-'+rank : '';
-      const rankText = rank ? (' ↓ ' + rankLabel(rank)) : '';
-      return '<td class="price-cell'+(low?' is-lowest':'')+rankClass+'">'+(price===null?'—':fmtp(price)+rankText)+'</td>';
+      const rankText = rank ? (' <span class="rank-note">'+rankLabel(rank)+'</span>') : '';
+      const pending = !!r.price_pending || !!t.prices_withheld_pending_award;
+      return '<td class="price-cell'+(low?' is-lowest':'')+rankClass+'">'+(price===null?(pending?'Pending':'—'):fmtp(price)+rankText)+'</td>';
     }).join('');
     const tags=(r.shortlisted===false?' <span class="badge">NOT SHORTLISTED</span>':'')+
       (t.awarded_to && String(r.name||'').toUpperCase()===String(t.awarded_to).toUpperCase()?' <span class="award-tag">AWARDED</span>':'');
+    const noPublishedPrice = r.total_price == null && (r.price_pending || t.prices_withheld_pending_award);
     return '<tr><td class="row-num">'+String(i+1).padStart(2,'0')+'</td><td class="company-cell">'+escapeHtml(r.name)+tags+'</td>'+cells+
-      '<td class="price-cell">'+(r.total_price == null?'—':fmtp(r.total_price))+'</td></tr>';
+      '<td class="price-cell">'+(r.total_price == null?(noPublishedPrice?'Pending':'—'):fmtp(r.total_price))+'</td></tr>';
   }).join('');
+  const noPublicPrices = respondents.length > 0 && columns.length === 0 &&
+    respondents.every(r=>r.total_price == null);
+  const pendingNotice = noPublicPrices && (t.two_envelope || t.prices_withheld_pending_award ||
+                             respondents.some(r=>r.price_pending)) ?
+    '<div class="summary-box">Two-envelope tender under evaluation. All published respondent names are shown; bid prices will be published after award.</div>' : '';
   const detail=respondents.length?
-    '<div style="overflow-x:auto"><table class="resp-table"><thead><tr><th>#</th><th>Company</th>'+columnHeaders+
-    '<th>GeBIZ published total*</th></tr></thead><tbody>'+rows+'</tbody></table></div>':
+    pendingNotice + '<div class="bid-table-scroll"><table class="resp-table bid-table"><thead><tr><th>#</th><th>Company</th>'+columnHeaders+
+    '<th>'+(noPublicPrices?'Price status':'GeBIZ published total*')+'</th></tr></thead><tbody>'+rows+'</tbody></table></div>':
     '<div class="empty">Respondent data not yet available.</div>';
   // Prices from separate OPTION columns are alternatives, never additive.
   // Find the lowest *actual quoted* price in each option, then the cheapest
@@ -924,11 +1043,11 @@ function renderClosedCard(t) {
   const indicativeSum=allProjectMinimaAvailable?
     projectBest.reduce((sum,p)=>sum+p.best.price,0):null;
   const combinedLowest=indicativeSum!==null?
-    '<div class="summary-box"><strong>Indicative lowest project-wise combination: '+fmtp(indicativeSum)+'</strong>'+ 
+    '<div class="summary-box">Indicative lowest project-wise combination: '+fmtp(indicativeSum)+ 
     '<div style="color:var(--muted)">Sum of the cheapest quoted option for each project. It may combine different suppliers and is NOT necessarily the official awarded value.</div></div>':'';
   const legacyWarn=columns.length===0 && respondents.some(r=>r.total_price!=null)?
     '<div class="summary-box">Individual Item prices are not yet available. The figures below are GeBIZ totals across alternative Items; no options have been inferred or divided.</div>':'';
-  const summary='<div class="summary-box"><small>*GeBIZ published total on the Respondents page is NOT the price of a selected option. Alternative options in the same project must not be added together.</small></div>';
+  const summary=noPublicPrices ? '' : '<div class="summary-box"><small>*GeBIZ published total on the Respondents page is NOT the price of a selected option. Alternative options in the same project must not be added together.</small></div>';
   const awardSum=awards.length && awards.every(a=>a.awarded_value!=null && Number.isFinite(Number(a.awarded_value))) ?
     awards.reduce((sum,a)=>sum+Number(a.awarded_value),0):null;
   const awardMatches=awardSum!==null && t.awarded_value!=null &&
@@ -938,7 +1057,7 @@ function renderClosedCard(t) {
     (awards.length?'<div style="overflow-x:auto"><table class="resp-table" style="margin:10px 0"><thead><tr><th>Project</th><th>Item</th><th>Selected option</th><th>Awarded price</th></tr></thead><tbody>'+ 
       awards.map(a=>'<tr><td>'+escapeHtml(a.project||'?')+'</td><td>'+escapeHtml(a.item_no||'')+'</td><td>'+escapeHtml(a.option||'?')+'</td><td class="price-cell">'+fmtp(a.awarded_value)+'</td></tr>').join('')+
       '</tbody></table></div>':'<div>Selected Item details are awaiting extraction.</div>')+
-    '<div><strong>Official total awarded value: '+(t.awarded_value==null?'—':fmtp(t.awarded_value))+'</strong>'+ 
+    '<div>Official total awarded value: '+(t.awarded_value==null?'—':fmtp(t.awarded_value))+''+ 
       (t.awarded_date?' · '+escapeHtml(t.awarded_date):'')+'</div>'+ 
     (awardSum!==null ? '<div>Sum of selected awarded Items: '+fmtp(awardSum)+ 
       (awardMatches?' · verified against official total':' · check against official total')+'</div>' : '')+
