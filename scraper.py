@@ -22,7 +22,12 @@ if sys.platform == "win32":
 SEARCH_TERM     = "dwelling unit"
 TITLE_MUST_HAVE = "building works"
 HDB_AGENCY_RE = re.compile(r"\b(?:housing\s*(?:and|&)\s*development\s*board|hdb)\b", re.I)
-PROJECT_RE = re.compile(r"\bproj(?:ect)?\.?\s*[:#-]?\s*([A-Z]{1,5}(?:[-/]\w+)?)\b", re.I)
+# Require a word boundary after PROJ / PROJECT. Previously PROJECT could be
+# misread as PROJ + project code ECT, creating false ECT columns.
+PROJECT_RE = re.compile(
+    r"\b(?:PROJECT|PROJ)\b\.?(?:\s*[:#-]\s*|\s+)([A-Z]{1,5}(?:\s*[-/]\s*[A-Z]{1,5})?)\b",
+    re.I,
+)
 BUILDING_RE = re.compile(r"\b(?:building|bldg\.?)\s*(?:works?|wk[s]?)\b", re.I)
 DU_COUNT_RE = re.compile(r"\bTOTAL\s*:?\s*([\d,]+)\s*(?:DU[S]?|DWELLING\s+UNITS?)\b", re.I)
 DATA_FILE       = "gebiz_data.json"
@@ -135,6 +140,35 @@ def backfill_el_dt_pdf_snapshot(data):
                                    r.get('total_price') if r.get('total_price') is not None else float('inf')))
         log.info('ELDT_PDF_BACKFILL %s: added %d firms and %d verified Item prices; %d/%d firms',
                  doc_no, recovered_companies, recovered_items, len(current), 20)
+
+def remove_invalid_bid_projects(data):
+    """Remove historical pseudo-project bids without removing valid amounts.
+
+    A former regex could parse PROJECT as PROJ + ECT. For tenders whose
+    titles contain explicit project codes, only those codes are valid.
+    Other records (e.g. HDB term contracts without project codes) are kept.
+    This does not infer any prices or overwrite current verified bids.
+    """
+    for tender in (data.get('open', []) + data.get('closed', [])):
+        valid = {m.group(1).upper().replace(' ', '')
+                 for m in PROJECT_RE.finditer(tender.get('title', '') or '')}
+        if not valid:
+            continue
+        removed = 0
+        for supplier in tender.get('respondents', []) or []:
+            original = supplier.get('bid_items') or []
+            retained = []
+            for item in original:
+                p = str(item.get('project') or '').upper().replace(' ', '')
+                if p and p not in valid:
+                    removed += 1
+                    continue
+                retained.append(item)
+            if len(retained) != len(original):
+                supplier['bid_items'] = retained
+        if removed:
+            log.info('INVALID_PROJECT_BIDS_REMOVED %s: %d entries; valid projects=%s',
+                     tender.get('doc_no'), removed, sorted(valid))
 
 # ── Telegram config (from environment, NOT hardcoded) ────────────────────────
 TG_TOKEN   = os.environ.get("TG_TOKEN", "").strip()
@@ -1040,7 +1074,10 @@ class GeBIZScraper:
             for j,it in enumerate(matches):
                 block=section[it.end():matches[j+1].start() if j+1<len(matches) else len(section)]
                 option_m=re.search(r'\bOPTION\s*[:#-]?\s*(\d{0,2}\s*[AB])\b',block,re.I)
-                project_m=re.search(r'\bPROJ(?:ECT)?\.?\s*[:#-]?\s*([A-Z]{1,5}(?:\s*[-/]\s*[A-Z]{1,5})?)\b',block,re.I)
+                # PROJECT 1 identifies a lot, not its project code; the later
+                # PROJECT EL / DT identifies the actual project. The word
+                # boundary also prevents fake ECT from PROJECT.
+                project_m=PROJECT_RE.search(block)
                 base_m=re.search(r'\bBASE\s+BID\b',block,re.I)
                 if not option_m or not project_m or not base_m:
                     continue
@@ -1466,6 +1503,9 @@ def run_check():
     # Fill legacy EL+DT data gaps using the supplied, fully validated PDF
     # only when the most recent live run did not provide those Items.
     backfill_el_dt_pdf_snapshot(data)
+    # Persistently prune ECT (and other spurious project identifiers) that
+    # may have survived prior runs or field-level merges.
+    remove_invalid_bid_projects(data)
     save_data(data)
     scraper.stop()
     log.info("Done. +%d open +%d closed. Total: %d open %d closed.",
