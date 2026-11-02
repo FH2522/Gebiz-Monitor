@@ -35,7 +35,7 @@
     {
       "title": "PART A: BUILDING WORKS AT PROJECT FJ (TOTAL: 812 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
       "doc_no": "HDB000ETT26000176",
-      "close_date": "10 Nov 2026 04:00PM",
+      "close_date": "23 Nov 2026 04:00PM",
       "published": "28 Sep 2026 04:35PM",
       "status": "Open",
       "agency": "Housing and Development Board",
@@ -3356,8 +3356,8 @@
       "prices_withheld_pending_award": true
     }
   ],
-  "last_updated": "02 Nov 2026, 07:50:35",
-  "run_count": 41,
+  "last_updated": "02 Nov 2026, 12:20:25",
+  "run_count": 42,
   "cancelled": [
     {
       "title": "PROJECT 1: BUILDING WORKS AT PROJECT EH (TOTAL: 834 DWELLING UNITS ); PROJECT 2: ROAD IMPROVEMENT AND INFRASTRUCTURE WORKS AT PROJECT EH",
