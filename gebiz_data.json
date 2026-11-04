@@ -19,7 +19,7 @@
     {
       "title": "PART A: BUILDING WORKS AT PROJECT EG AND PARK (TOTAL: 2,234 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
       "doc_no": "HDB000ETT26000174",
-      "close_date": "11 Nov 2026 04:00PM",
+      "close_date": "25 Nov 2026 04:00PM",
       "published": "30 Sep 2026 03:50PM",
       "status": "Open",
       "agency": "Housing and Development Board",
@@ -67,7 +67,7 @@
     {
       "title": "PART A: BUILDING WORKS AT PROJECT GB (TOTAL: 1,928 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
       "doc_no": "HDB000ETT26000146",
-      "close_date": "10 Nov 2026 04:00PM",
+      "close_date": "18 Nov 2026 04:00PM",
       "published": "24 Aug 2026 04:50PM",
       "status": "Open",
       "agency": "Housing and Development Board",
@@ -3356,8 +3356,8 @@
       "prices_withheld_pending_award": true
     }
   ],
-  "last_updated": "04 Nov 2026, 08:02:27",
-  "run_count": 48,
+  "last_updated": "04 Nov 2026, 13:04:47",
+  "run_count": 49,
   "cancelled": [
     {
       "title": "PROJECT 1: BUILDING WORKS AT PROJECT EH (TOTAL: 834 DWELLING UNITS ); PROJECT 2: ROAD IMPROVEMENT AND INFRASTRUCTURE WORKS AT PROJECT EH",
