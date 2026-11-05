@@ -3233,8 +3233,9 @@
       "hdb_verified": true,
       "requires_option_b": false,
       "respondents_expected": 5,
-      "respondents_complete": true,
+      "prices_withheld_pending_award": true,
       "two_envelope": true,
+      "respondents_complete": true,
       "under_evaluation": true,
       "respondents": [
         {
@@ -3283,9 +3284,8 @@
           "price_pending": true
         }
       ],
-      "added": "29 Oct 2026, 15:29",
-      "project_codes": [],
-      "prices_withheld_pending_award": true
+      "added": "05 Nov 2026, 09:09",
+      "project_codes": []
     },
     {
       "title": "TENDER FOR TERM CONTRACT FOR THE PRODUCTION, SUPPLY AND DELIVERY OF PRECAST PREFABRICATED BATHROOM UNIT (PBU) TO VARIOUS HDB BUILDING SITES (BATCH 1)",
@@ -3301,8 +3301,9 @@
       "hdb_verified": true,
       "requires_option_b": false,
       "respondents_expected": 5,
-      "respondents_complete": true,
+      "prices_withheld_pending_award": true,
       "two_envelope": true,
+      "respondents_complete": true,
       "under_evaluation": true,
       "respondents": [
         {
@@ -3351,13 +3352,12 @@
           "price_pending": true
         }
       ],
-      "added": "29 Oct 2026, 15:29",
-      "project_codes": [],
-      "prices_withheld_pending_award": true
+      "added": "05 Nov 2026, 09:10",
+      "project_codes": []
     }
   ],
-  "last_updated": "05 Nov 2026, 04:21:31",
-  "run_count": 51,
+  "last_updated": "05 Nov 2026, 09:10:02",
+  "run_count": 52,
   "cancelled": [
     {
       "title": "PROJECT 1: BUILDING WORKS AT PROJECT EH (TOTAL: 834 DWELLING UNITS ); PROJECT 2: ROAD IMPROVEMENT AND INFRASTRUCTURE WORKS AT PROJECT EH",
