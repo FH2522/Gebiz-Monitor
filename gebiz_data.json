@@ -1141,7 +1141,8 @@
       "project_codes": [
         "CM-CN"
       ],
-      "prices_withheld_pending_award": false
+      "prices_withheld_pending_award": false,
+      "under_evaluation": true
     },
     {
       "title": "PART A: BUILDING WORKS AT PROJECT DU (TOTAL: 1,695 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
@@ -3355,8 +3356,8 @@
       "project_codes": []
     }
   ],
-  "last_updated": "07 Nov 2026, 10:39:20",
-  "run_count": 59,
+  "last_updated": "07 Nov 2026, 17:43:09",
+  "run_count": 60,
   "cancelled": [
     {
       "title": "PROJECT 1: BUILDING WORKS AT PROJECT EH (TOTAL: 834 DWELLING UNITS ); PROJECT 2: ROAD IMPROVEMENT AND INFRASTRUCTURE WORKS AT PROJECT EH",
