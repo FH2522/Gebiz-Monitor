@@ -1136,7 +1136,6 @@
       "requires_option_b": true,
       "hdb_verified": true,
       "two_envelope": false,
-      "under_evaluation": true,
       "project_code": "CM-CN",
       "du_count": 1890,
       "project_codes": [
@@ -3356,8 +3355,8 @@
       "project_codes": []
     }
   ],
-  "last_updated": "07 Nov 2026, 06:47:15",
-  "run_count": 58,
+  "last_updated": "07 Nov 2026, 10:39:20",
+  "run_count": 59,
   "cancelled": [
     {
       "title": "PROJECT 1: BUILDING WORKS AT PROJECT EH (TOTAL: 834 DWELLING UNITS ); PROJECT 2: ROAD IMPROVEMENT AND INFRASTRUCTURE WORKS AT PROJECT EH",
