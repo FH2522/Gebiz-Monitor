@@ -51,7 +51,7 @@
     {
       "title": "PART A: BUILDING WORKS AT PROJECT EN (TOTAL: 460 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
       "doc_no": "HDB000ETT26000150",
-      "close_date": "13 Nov 2026 04:00PM",
+      "close_date": "19 Nov 2026 04:00PM",
       "published": "28 Aug 2026 04:05PM",
       "status": "Open",
       "agency": "Housing and Development Board",
@@ -693,7 +693,6 @@
       "requires_option_b": true,
       "hdb_verified": true,
       "two_envelope": false,
-      "under_evaluation": true,
       "project_code": "GY",
       "du_count": 711,
       "project_codes": [
@@ -3356,8 +3355,8 @@
       "project_codes": []
     }
   ],
-  "last_updated": "11 Nov 2026, 06:35:07",
-  "run_count": 74,
+  "last_updated": "11 Nov 2026, 10:15:58",
+  "run_count": 75,
   "cancelled": [
     {
       "title": "PROJECT 1: BUILDING WORKS AT PROJECT EH (TOTAL: 834 DWELLING UNITS ); PROJECT 2: ROAD IMPROVEMENT AND INFRASTRUCTURE WORKS AT PROJECT EH",
