@@ -1592,7 +1592,7 @@
       "doc_no": "HDB000ETT26000089",
       "close_date": "14 Aug 2026 04:00PM",
       "published": "15 May 2026 03:20PM",
-      "status": "Closed",
+      "status": "Awarded",
       "agency": "Housing and Development Board",
       "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000089",
       "tender_type": "building_works",
@@ -1978,13 +1978,25 @@
       "requires_option_b": true,
       "hdb_verified": true,
       "two_envelope": false,
-      "under_evaluation": true,
+      "under_evaluation": false,
       "project_code": "BV",
       "du_count": 438,
       "project_codes": [
         "BV"
       ],
-      "prices_withheld_pending_award": false
+      "prices_withheld_pending_award": false,
+      "awarded_to": "CHAN RONG FEN BUILDING CONSTRUCTION PTE LTD",
+      "awarded_value": 96000000.0,
+      "awarded_date": "05 Nov 2026",
+      "awarded_items": [
+        {
+          "item_no": 2,
+          "option": "B",
+          "project": "BV",
+          "awarded_value": 96000000.0
+        }
+      ],
+      "award_confirmed": true
     },
     {
       "title": "PROJ1: PT A:BLDG WORKS AT PROJECT DD(TOTAL:1,206 DUS ) PT B:CONTINGENCY WORKS PROJ2: PT A:BLDG WORKS AT PROJECT DO(TOTAL:366 DUS )PT B:CONTINGENCY WORKS",
@@ -3356,8 +3368,8 @@
       "project_codes": []
     }
   ],
-  "last_updated": "12 Nov 2026, 15:06:26",
-  "run_count": 79,
+  "last_updated": "13 Nov 2026, 00:01:02",
+  "run_count": 80,
   "cancelled": [
     {
       "title": "PROJECT 1: BUILDING WORKS AT PROJECT EH (TOTAL: 834 DWELLING UNITS ); PROJECT 2: ROAD IMPROVEMENT AND INFRASTRUCTURE WORKS AT PROJECT EH",
