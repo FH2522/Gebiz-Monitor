@@ -3365,17 +3365,242 @@
       "hdb_verified": true,
       "requires_option_b": true,
       "under_evaluation": true,
-      "respondents": [],
+      "respondents": [
+        {
+          "name": "CHIU TENG CONSTRUCTION CO. PTE. LTD.",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "GB",
+              "option": "A",
+              "price": 416000000.0
+            },
+            {
+              "item_no": 2,
+              "project": "GB",
+              "option": "B",
+              "price": 418000000.0
+            }
+          ],
+          "opt_a": 416000000.0,
+          "opt_b": 418000000.0,
+          "total_price": 834000000.0,
+          "price_pending": false
+        },
+        {
+          "name": "NEWCON BUILDERS PTE. LTD.",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "GB",
+              "option": "A",
+              "price": 422380000.0
+            },
+            {
+              "item_no": 2,
+              "project": "GB",
+              "option": "B",
+              "price": 425380000.0
+            }
+          ],
+          "opt_a": 422380000.0,
+          "opt_b": 425380000.0,
+          "total_price": 847760000.0,
+          "price_pending": false
+        },
+        {
+          "name": "QINGJIAN INTERNATIONAL (SOUTH PACIFIC) GROUP DEVELOPMENT CO., PTE. LTD.",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "GB",
+              "option": "A",
+              "price": 426600000.0
+            },
+            {
+              "item_no": 2,
+              "project": "GB",
+              "option": "B",
+              "price": 429600000.0
+            }
+          ],
+          "opt_a": 426600000.0,
+          "opt_b": 429600000.0,
+          "total_price": 856200000.0,
+          "price_pending": false
+        },
+        {
+          "name": "RICH CONSTRUCTION COMPANY PTE. LTD.",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "GB",
+              "option": "A",
+              "price": 431800000.0
+            },
+            {
+              "item_no": 2,
+              "project": "GB",
+              "option": "B",
+              "price": 433800000.0
+            }
+          ],
+          "opt_a": 431800000.0,
+          "opt_b": 433800000.0,
+          "total_price": 865600000.0,
+          "price_pending": false
+        },
+        {
+          "name": "H P CONSTRUCTION & ENGINEERING PTE LTD",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "GB",
+              "option": "A",
+              "price": 433200000.0
+            },
+            {
+              "item_no": 2,
+              "project": "GB",
+              "option": "B",
+              "price": 436000000.0
+            }
+          ],
+          "opt_a": 433200000.0,
+          "opt_b": 436000000.0,
+          "total_price": 869200000.0,
+          "price_pending": false
+        },
+        {
+          "name": "WEE HUR CONSTRUCTION PTE LTD",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "GB",
+              "option": "A",
+              "price": 452500000.0
+            },
+            {
+              "item_no": 2,
+              "project": "GB",
+              "option": "B",
+              "price": 452500000.0
+            }
+          ],
+          "opt_a": 452500000.0,
+          "opt_b": 452500000.0,
+          "total_price": 905000000.0,
+          "price_pending": false
+        },
+        {
+          "name": "LIM WEN HENG CONSTRUCTION PTE LTD",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "GB",
+              "option": "A",
+              "price": 460840000.0
+            },
+            {
+              "item_no": 2,
+              "project": "GB",
+              "option": "B",
+              "price": 463840000.0
+            }
+          ],
+          "opt_a": 460840000.0,
+          "opt_b": 463840000.0,
+          "total_price": 924680000.0,
+          "price_pending": false
+        },
+        {
+          "name": "CHIP ENG SENG CONTRACTORS (1988) PTE LTD",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "GB",
+              "option": "A",
+              "price": 481000000.0
+            },
+            {
+              "item_no": 2,
+              "project": "GB",
+              "option": "B",
+              "price": 486000000.0
+            }
+          ],
+          "opt_a": 481000000.0,
+          "opt_b": 486000000.0,
+          "total_price": 967000000.0,
+          "price_pending": false
+        },
+        {
+          "name": "LC&T BUILDER (1971) PTE. LTD.",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "GB",
+              "option": "A",
+              "price": 485600000.0
+            },
+            {
+              "item_no": 2,
+              "project": "GB",
+              "option": "B",
+              "price": 489300000.0
+            }
+          ],
+          "opt_a": 485600000.0,
+          "opt_b": 489300000.0,
+          "total_price": 974900000.0,
+          "price_pending": false
+        },
+        {
+          "name": "VICO CONSTRUCTION PTE. LTD.",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "GB",
+              "option": "A",
+              "price": 501370000.0
+            },
+            {
+              "item_no": 2,
+              "project": "GB",
+              "option": "B",
+              "price": 502370000.0
+            }
+          ],
+          "opt_a": 501370000.0,
+          "opt_b": 502370000.0,
+          "total_price": 1003740000.0,
+          "price_pending": false
+        }
+      ],
       "added": "18 Nov 2026, 17:46",
       "project_code": "GB",
       "project_codes": [
         "GB"
       ],
-      "du_count": 1928
+      "du_count": 1928,
+      "respondents_expected": 11,
+      "respondents_complete": false,
+      "two_envelope": false,
+      "prices_withheld_pending_award": false
     }
   ],
-  "last_updated": "18 Nov 2026, 17:47:33",
-  "run_count": 101,
+  "last_updated": "19 Nov 2026, 02:50:50",
+  "run_count": 102,
   "cancelled": [
     {
       "title": "PROJECT 1: BUILDING WORKS AT PROJECT EH (TOTAL: 834 DWELLING UNITS ); PROJECT 2: ROAD IMPROVEMENT AND INFRASTRUCTURE WORKS AT PROJECT EH",
