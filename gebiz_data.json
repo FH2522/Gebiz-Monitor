@@ -49,22 +49,6 @@
       ]
     },
     {
-      "title": "PART A: BUILDING WORKS AT PROJECT EN (TOTAL: 460 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
-      "doc_no": "HDB000ETT26000150",
-      "close_date": "19 Nov 2026 04:00PM",
-      "published": "28 Aug 2026 04:05PM",
-      "status": "Open",
-      "agency": "Housing and Development Board",
-      "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000150",
-      "tender_type": "building_works",
-      "added": "26 Oct 2026, 15:08",
-      "project_code": "EN",
-      "du_count": 460,
-      "project_codes": [
-        "EN"
-      ]
-    },
-    {
       "title": "PROJ 1 PT A: BLDG WORKS AT PROJ DS (TOTAL: 235 DUS ) PT B: CONTINGENCY WORKS PROJ 2 PT A: BLDG WORKS AT PROJ DP (TOTAL: 1271 DUS ) PT B:CONTINGENY WORKS",
       "doc_no": "HDB000ETT26000170",
       "close_date": "24 Nov 2026 04:00PM",
@@ -3597,10 +3581,32 @@
       "respondents_complete": false,
       "two_envelope": false,
       "prices_withheld_pending_award": false
+    },
+    {
+      "title": "PART A: BUILDING WORKS AT PROJECT EN (TOTAL: 460 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
+      "doc_no": "HDB000ETT26000150",
+      "close_date": "19 Nov 2026 04:00PM",
+      "published": "28 Aug 2026 04:05PM",
+      "status": "Closed",
+      "agency": "Housing and Development Board",
+      "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000150",
+      "tender_type": "building_works",
+      "contract_category": "building_works",
+      "term_kind": null,
+      "hdb_verified": true,
+      "requires_option_b": true,
+      "under_evaluation": true,
+      "respondents": [],
+      "added": "19 Nov 2026, 16:36",
+      "project_code": "EN",
+      "project_codes": [
+        "EN"
+      ],
+      "du_count": 460
     }
   ],
-  "last_updated": "19 Nov 2026, 09:03:06",
-  "run_count": 103,
+  "last_updated": "19 Nov 2026, 16:37:27",
+  "run_count": 104,
   "cancelled": [
     {
       "title": "PROJECT 1: BUILDING WORKS AT PROJECT EH (TOTAL: 834 DWELLING UNITS ); PROJECT 2: ROAD IMPROVEMENT AND INFRASTRUCTURE WORKS AT PROJECT EH",
