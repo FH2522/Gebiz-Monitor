@@ -3596,17 +3596,396 @@
       "hdb_verified": true,
       "requires_option_b": true,
       "under_evaluation": true,
-      "respondents": [],
+      "respondents": [
+        {
+          "name": "CHANG HUA CONSTRUCTION PTE LTD",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "EN",
+              "option": "A",
+              "price": 109800000.0
+            },
+            {
+              "item_no": 2,
+              "project": "EN",
+              "option": "B",
+              "price": 109800000.0
+            }
+          ],
+          "opt_a": 109800000.0,
+          "opt_b": 109800000.0,
+          "total_price": 219600000.0,
+          "price_pending": false
+        },
+        {
+          "name": "CHIU TENG CONSTRUCTION CO. PTE. LTD.",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "EN",
+              "option": "A",
+              "price": 113800000.0
+            },
+            {
+              "item_no": 2,
+              "project": "EN",
+              "option": "B",
+              "price": 113800000.0
+            }
+          ],
+          "opt_a": 113800000.0,
+          "opt_b": 113800000.0,
+          "total_price": 227600000.0,
+          "price_pending": false
+        },
+        {
+          "name": "SCT CONSTRUCTION PTE. LTD.",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "EN",
+              "option": "A",
+              "price": 114098000.0
+            },
+            {
+              "item_no": 2,
+              "project": "EN",
+              "option": "B",
+              "price": 114745000.0
+            }
+          ],
+          "opt_a": 114098000.0,
+          "opt_b": 114745000.0,
+          "total_price": 228843000.0,
+          "price_pending": false
+        },
+        {
+          "name": "KEN-PAL (S) PTE. LTD.",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "EN",
+              "option": "A",
+              "price": 118000000.0
+            },
+            {
+              "item_no": 2,
+              "project": "EN",
+              "option": "B",
+              "price": 118500000.0
+            }
+          ],
+          "opt_a": 118000000.0,
+          "opt_b": 118500000.0,
+          "total_price": 236500000.0,
+          "price_pending": false
+        },
+        {
+          "name": "RIGHT CONSTRUCTION PTE LTD",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "EN",
+              "option": "A",
+              "price": 121280000.0
+            },
+            {
+              "item_no": 2,
+              "project": "EN",
+              "option": "B",
+              "price": 122680000.0
+            }
+          ],
+          "opt_a": 121280000.0,
+          "opt_b": 122680000.0,
+          "total_price": 243960000.0,
+          "price_pending": false
+        },
+        {
+          "name": "KAH ENGINEERING (1986) PTE. LTD.",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "EN",
+              "option": "A",
+              "price": 124500000.0
+            },
+            {
+              "item_no": 2,
+              "project": "EN",
+              "option": "B",
+              "price": 125500000.0
+            }
+          ],
+          "opt_a": 124500000.0,
+          "opt_b": 125500000.0,
+          "total_price": 250000000.0,
+          "price_pending": false
+        },
+        {
+          "name": "H P CONSTRUCTION & ENGINEERING PTE LTD",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "EN",
+              "option": "A",
+              "price": 126300000.0
+            },
+            {
+              "item_no": 2,
+              "project": "EN",
+              "option": "B",
+              "price": 126900000.0
+            }
+          ],
+          "opt_a": 126300000.0,
+          "opt_b": 126900000.0,
+          "total_price": 253200000.0,
+          "price_pending": false
+        },
+        {
+          "name": "PRECISE DEVELOPMENT PTE. LTD.",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "EN",
+              "option": "A",
+              "price": 126500000.0
+            },
+            {
+              "item_no": 2,
+              "project": "EN",
+              "option": "B",
+              "price": 127500000.0
+            }
+          ],
+          "opt_a": 126500000.0,
+          "opt_b": 127500000.0,
+          "total_price": 254000000.0,
+          "price_pending": false
+        },
+        {
+          "name": "KIMLY CONSTRUCTION PRIVATE LIMITED",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "EN",
+              "option": "A",
+              "price": 126855000.0
+            },
+            {
+              "item_no": 2,
+              "project": "EN",
+              "option": "B",
+              "price": 128000000.0
+            }
+          ],
+          "opt_a": 126855000.0,
+          "opt_b": 128000000.0,
+          "total_price": 254855000.0,
+          "price_pending": false
+        },
+        {
+          "name": "CHINA CONSTRUCTION REALTY CO. PTE. LTD.",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "EN",
+              "option": "A",
+              "price": 128218000.0
+            },
+            {
+              "item_no": 2,
+              "project": "EN",
+              "option": "B",
+              "price": 129218000.0
+            }
+          ],
+          "opt_a": 128218000.0,
+          "opt_b": 129218000.0,
+          "total_price": 257436000.0,
+          "price_pending": false
+        },
+        {
+          "name": "NIPPON BUILDERS PTE. LTD.",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "EN",
+              "option": "A",
+              "price": 128555000.0
+            },
+            {
+              "item_no": 2,
+              "project": "EN",
+              "option": "B",
+              "price": 129555000.0
+            }
+          ],
+          "opt_a": 128555000.0,
+          "opt_b": 129555000.0,
+          "total_price": 258110000.0,
+          "price_pending": false
+        },
+        {
+          "name": "NEWCON BUILDERS PTE. LTD.",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "EN",
+              "option": "A",
+              "price": 129380000.0
+            },
+            {
+              "item_no": 2,
+              "project": "EN",
+              "option": "B",
+              "price": 130380000.0
+            }
+          ],
+          "opt_a": 129380000.0,
+          "opt_b": 130380000.0,
+          "total_price": 259760000.0,
+          "price_pending": false
+        },
+        {
+          "name": "LC&T BUILDER (1971) PTE. LTD.",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "EN",
+              "option": "A",
+              "price": 129200000.0
+            },
+            {
+              "item_no": 2,
+              "project": "EN",
+              "option": "B",
+              "price": 130600000.0
+            }
+          ],
+          "opt_a": 129200000.0,
+          "opt_b": 130600000.0,
+          "total_price": 259800000.0,
+          "price_pending": false
+        },
+        {
+          "name": "WELLTECH CONSTRUCTION PTE LTD",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "EN",
+              "option": "A",
+              "price": 135600000.0
+            },
+            {
+              "item_no": 2,
+              "project": "EN",
+              "option": "B",
+              "price": 136600000.0
+            }
+          ],
+          "opt_a": 135600000.0,
+          "opt_b": 136600000.0,
+          "total_price": 272200000.0,
+          "price_pending": false
+        },
+        {
+          "name": "MASTER CONTRACT SERVICES PTE LTD",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "EN",
+              "option": "A",
+              "price": 136000000.0
+            },
+            {
+              "item_no": 2,
+              "project": "EN",
+              "option": "B",
+              "price": 137100000.0
+            }
+          ],
+          "opt_a": 136000000.0,
+          "opt_b": 137100000.0,
+          "total_price": 273100000.0,
+          "price_pending": false
+        },
+        {
+          "name": "DEBENHO PTE LTD",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "EN",
+              "option": "A",
+              "price": 142000000.0
+            },
+            {
+              "item_no": 2,
+              "project": "EN",
+              "option": "B",
+              "price": 143500000.0
+            }
+          ],
+          "opt_a": 142000000.0,
+          "opt_b": 143500000.0,
+          "total_price": 285500000.0,
+          "price_pending": false
+        },
+        {
+          "name": "CHINA JINGYE ENGINEERING CORPORATION LIMITED (SINGAPORE BRANCH)",
+          "shortlisted": true,
+          "bid_items": [
+            {
+              "item_no": 1,
+              "project": "EN",
+              "option": "A",
+              "price": 147280000.0
+            },
+            {
+              "item_no": 2,
+              "project": "EN",
+              "option": "B",
+              "price": 149100000.0
+            }
+          ],
+          "opt_a": 147280000.0,
+          "opt_b": 149100000.0,
+          "total_price": 296380000.0,
+          "price_pending": false
+        }
+      ],
       "added": "19 Nov 2026, 16:36",
       "project_code": "EN",
       "project_codes": [
         "EN"
       ],
-      "du_count": 460
+      "du_count": 460,
+      "respondents_expected": 17,
+      "respondents_complete": true,
+      "two_envelope": false,
+      "prices_withheld_pending_award": false
     }
   ],
-  "last_updated": "20 Nov 2026, 01:40:43",
-  "run_count": 105,
+  "last_updated": "20 Nov 2026, 08:22:31",
+  "run_count": 106,
   "cancelled": [
     {
       "title": "PROJECT 1: BUILDING WORKS AT PROJECT EH (TOTAL: 834 DWELLING UNITS ); PROJECT 2: ROAD IMPROVEMENT AND INFRASTRUCTURE WORKS AT PROJECT EH",
