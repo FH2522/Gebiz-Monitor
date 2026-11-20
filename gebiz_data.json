@@ -51,7 +51,7 @@
     {
       "title": "PROJ 1 PT A: BLDG WORKS AT PROJ DS (TOTAL: 235 DUS ) PT B: CONTINGENCY WORKS PROJ 2 PT A: BLDG WORKS AT PROJ DP (TOTAL: 1271 DUS ) PT B:CONTINGENY WORKS",
       "doc_no": "HDB000ETT26000170",
-      "close_date": "24 Nov 2026 04:00PM",
+      "close_date": "01 Dec 2026 04:00PM",
       "published": "23 Sep 2026 06:50PM",
       "status": "Open",
       "agency": "Housing and Development Board",
@@ -3984,8 +3984,8 @@
       "prices_withheld_pending_award": false
     }
   ],
-  "last_updated": "20 Nov 2026, 08:22:31",
-  "run_count": 106,
+  "last_updated": "20 Nov 2026, 15:44:45",
+  "run_count": 107,
   "cancelled": [
     {
       "title": "PROJECT 1: BUILDING WORKS AT PROJECT EH (TOTAL: 834 DWELLING UNITS ); PROJECT 2: ROAD IMPROVEMENT AND INFRASTRUCTURE WORKS AT PROJECT EH",
