@@ -3200,142 +3200,6 @@
       "item_prices_complete": true
     },
     {
-      "title": "TENDER FOR TERM CONTRACT FOR THE PRODUCTION, SUPPLY AND DELIVERY OF PRECAST PREFABRICATED BATHROOM UNIT (PBU) TO VARIOUS HDB BUILDING SITES (BATCH 2)",
-      "doc_no": "HDB000ETT26000151",
-      "close_date": "26 Oct 2026 04:00PM",
-      "published": "28 Aug 2026 01:35PM",
-      "status": "Closed",
-      "agency": "Housing and Development Board",
-      "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000151",
-      "tender_type": "pbu",
-      "contract_category": "term_contract",
-      "term_kind": "pbu",
-      "hdb_verified": true,
-      "requires_option_b": false,
-      "respondents_expected": 5,
-      "prices_withheld_pending_award": true,
-      "two_envelope": true,
-      "respondents_complete": true,
-      "under_evaluation": true,
-      "respondents": [
-        {
-          "name": "HL BUILDING MATERIALS PTE. LTD.",
-          "shortlisted": null,
-          "bid_items": [],
-          "opt_a": null,
-          "opt_b": null,
-          "total_price": null,
-          "price_pending": true
-        },
-        {
-          "name": "INTEGRATED PRECAST SOLUTIONS PTE. LTD.",
-          "shortlisted": null,
-          "bid_items": [],
-          "opt_a": null,
-          "opt_b": null,
-          "total_price": null,
-          "price_pending": true
-        },
-        {
-          "name": "PRECAST CONCRETE PTE. LTD.",
-          "shortlisted": null,
-          "bid_items": [],
-          "opt_a": null,
-          "opt_b": null,
-          "total_price": null,
-          "price_pending": true
-        },
-        {
-          "name": "SUNWAY CONCRETE PRODUCTS (S) PTE LTD",
-          "shortlisted": null,
-          "bid_items": [],
-          "opt_a": null,
-          "opt_b": null,
-          "total_price": null,
-          "price_pending": true
-        },
-        {
-          "name": "SYSCON PTE. LTD.",
-          "shortlisted": null,
-          "bid_items": [],
-          "opt_a": null,
-          "opt_b": null,
-          "total_price": null,
-          "price_pending": true
-        }
-      ],
-      "added": "14 Nov 2026, 02:08",
-      "project_codes": []
-    },
-    {
-      "title": "TENDER FOR TERM CONTRACT FOR THE PRODUCTION, SUPPLY AND DELIVERY OF PRECAST PREFABRICATED BATHROOM UNIT (PBU) TO VARIOUS HDB BUILDING SITES (BATCH 1)",
-      "doc_no": "HDB000ETT26000152",
-      "close_date": "26 Oct 2026 04:00PM",
-      "published": "28 Aug 2026 10:20AM",
-      "status": "Closed",
-      "agency": "Housing and Development Board",
-      "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000152",
-      "tender_type": "pbu",
-      "contract_category": "term_contract",
-      "term_kind": "pbu",
-      "hdb_verified": true,
-      "requires_option_b": false,
-      "respondents_expected": 5,
-      "prices_withheld_pending_award": true,
-      "two_envelope": true,
-      "respondents_complete": true,
-      "under_evaluation": true,
-      "respondents": [
-        {
-          "name": "HL BUILDING MATERIALS PTE. LTD.",
-          "shortlisted": null,
-          "bid_items": [],
-          "opt_a": null,
-          "opt_b": null,
-          "total_price": null,
-          "price_pending": true
-        },
-        {
-          "name": "INTEGRATED PRECAST SOLUTIONS PTE. LTD.",
-          "shortlisted": null,
-          "bid_items": [],
-          "opt_a": null,
-          "opt_b": null,
-          "total_price": null,
-          "price_pending": true
-        },
-        {
-          "name": "PRECAST CONCRETE PTE. LTD.",
-          "shortlisted": null,
-          "bid_items": [],
-          "opt_a": null,
-          "opt_b": null,
-          "total_price": null,
-          "price_pending": true
-        },
-        {
-          "name": "SUNWAY CONCRETE PRODUCTS (S) PTE LTD",
-          "shortlisted": null,
-          "bid_items": [],
-          "opt_a": null,
-          "opt_b": null,
-          "total_price": null,
-          "price_pending": true
-        },
-        {
-          "name": "SYSCON PTE. LTD.",
-          "shortlisted": null,
-          "bid_items": [],
-          "opt_a": null,
-          "opt_b": null,
-          "total_price": null,
-          "price_pending": true
-        }
-      ],
-      "added": "14 Nov 2026, 02:08",
-      "project_codes": []
-    },
-    {
       "title": "PART A: BUILDING WORKS AT PROJECT GB (TOTAL: 1,928 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
       "doc_no": "HDB000ETT26000146",
       "close_date": "18 Nov 2026 04:00PM",
@@ -3982,10 +3846,146 @@
       "respondents_complete": true,
       "two_envelope": false,
       "prices_withheld_pending_award": false
+    },
+    {
+      "title": "TENDER FOR TERM CONTRACT FOR THE PRODUCTION, SUPPLY AND DELIVERY OF PRECAST PREFABRICATED BATHROOM UNIT (PBU) TO VARIOUS HDB BUILDING SITES (BATCH 2)",
+      "doc_no": "HDB000ETT26000151",
+      "close_date": "26 Oct 2026 04:00PM",
+      "published": "28 Aug 2026 01:35PM",
+      "status": "Closed",
+      "agency": "Housing and Development Board",
+      "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000151",
+      "tender_type": "pbu",
+      "contract_category": "term_contract",
+      "term_kind": "pbu",
+      "hdb_verified": true,
+      "requires_option_b": false,
+      "respondents_expected": 5,
+      "prices_withheld_pending_award": true,
+      "two_envelope": true,
+      "respondents_complete": true,
+      "under_evaluation": true,
+      "respondents": [
+        {
+          "name": "HL BUILDING MATERIALS PTE. LTD.",
+          "shortlisted": null,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": null,
+          "price_pending": true
+        },
+        {
+          "name": "INTEGRATED PRECAST SOLUTIONS PTE. LTD.",
+          "shortlisted": null,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": null,
+          "price_pending": true
+        },
+        {
+          "name": "PRECAST CONCRETE PTE. LTD.",
+          "shortlisted": null,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": null,
+          "price_pending": true
+        },
+        {
+          "name": "SUNWAY CONCRETE PRODUCTS (S) PTE LTD",
+          "shortlisted": null,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": null,
+          "price_pending": true
+        },
+        {
+          "name": "SYSCON PTE. LTD.",
+          "shortlisted": null,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": null,
+          "price_pending": true
+        }
+      ],
+      "added": "22 Nov 2026, 03:44",
+      "project_codes": []
+    },
+    {
+      "title": "TENDER FOR TERM CONTRACT FOR THE PRODUCTION, SUPPLY AND DELIVERY OF PRECAST PREFABRICATED BATHROOM UNIT (PBU) TO VARIOUS HDB BUILDING SITES (BATCH 1)",
+      "doc_no": "HDB000ETT26000152",
+      "close_date": "26 Oct 2026 04:00PM",
+      "published": "28 Aug 2026 10:20AM",
+      "status": "Closed",
+      "agency": "Housing and Development Board",
+      "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000152",
+      "tender_type": "pbu",
+      "contract_category": "term_contract",
+      "term_kind": "pbu",
+      "hdb_verified": true,
+      "requires_option_b": false,
+      "respondents_expected": 5,
+      "prices_withheld_pending_award": true,
+      "two_envelope": true,
+      "respondents_complete": true,
+      "under_evaluation": true,
+      "respondents": [
+        {
+          "name": "HL BUILDING MATERIALS PTE. LTD.",
+          "shortlisted": null,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": null,
+          "price_pending": true
+        },
+        {
+          "name": "INTEGRATED PRECAST SOLUTIONS PTE. LTD.",
+          "shortlisted": null,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": null,
+          "price_pending": true
+        },
+        {
+          "name": "PRECAST CONCRETE PTE. LTD.",
+          "shortlisted": null,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": null,
+          "price_pending": true
+        },
+        {
+          "name": "SUNWAY CONCRETE PRODUCTS (S) PTE LTD",
+          "shortlisted": null,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": null,
+          "price_pending": true
+        },
+        {
+          "name": "SYSCON PTE. LTD.",
+          "shortlisted": null,
+          "bid_items": [],
+          "opt_a": null,
+          "opt_b": null,
+          "total_price": null,
+          "price_pending": true
+        }
+      ],
+      "added": "22 Nov 2026, 03:44",
+      "project_codes": []
     }
   ],
-  "last_updated": "21 Nov 2026, 20:11:05",
-  "run_count": 111,
+  "last_updated": "22 Nov 2026, 03:44:34",
+  "run_count": 112,
   "cancelled": [
     {
       "title": "PROJECT 1: BUILDING WORKS AT PROJECT EH (TOTAL: 834 DWELLING UNITS ); PROJECT 2: ROAD IMPROVEMENT AND INFRASTRUCTURE WORKS AT PROJECT EH",
