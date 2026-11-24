@@ -69,6 +69,26 @@
       ],
       "respondents_complete": true,
       "under_evaluation": false
+    },
+    {
+      "title": "PART A: BUILDING WORKS AT PROJECT CM-CN (TOTAL: 1,890 DWELLING UNITS ); PART B: CONTINGENCY WORKS",
+      "doc_no": "HDB000ETT26000199",
+      "close_date": "30 Nov 2026 04:00PM",
+      "published": "24 Nov 2026 03:35PM",
+      "status": "Open",
+      "agency": "Housing and Development Board",
+      "url": "https://www.gebiz.gov.sg/ptn/opportunity/directlink.xhtml?docCode=HDB000ETT26000199",
+      "tender_type": "building_works",
+      "contract_category": "building_works",
+      "term_kind": null,
+      "under_evaluation": false,
+      "hdb_verified": true,
+      "added": "25 Nov 2026, 02:10",
+      "project_code": "CM-CN",
+      "project_codes": [
+        "CM-CN"
+      ],
+      "du_count": 1890
     }
   ],
   "closed": [
@@ -3984,8 +4004,8 @@
       "project_codes": []
     }
   ],
-  "last_updated": "24 Nov 2026, 14:27:29",
-  "run_count": 120,
+  "last_updated": "25 Nov 2026, 02:12:12",
+  "run_count": 121,
   "cancelled": [
     {
       "title": "PROJECT 1: BUILDING WORKS AT PROJECT EH (TOTAL: 834 DWELLING UNITS ); PROJECT 2: ROAD IMPROVEMENT AND INFRASTRUCTURE WORKS AT PROJECT EH",
